@@ -12,6 +12,7 @@ final class UserPreferences: ObservableObject {
     // MARK: - Transcription
 
     @AppStorage("language") var language: String = "auto"
+    @AppStorage("translateToEnglish") var translateToEnglish: Bool = false
     @AppStorage("autoInjectText") var autoInjectText: Bool = true
     @AppStorage("copyToClipboard") var copyToClipboard: Bool = true
 

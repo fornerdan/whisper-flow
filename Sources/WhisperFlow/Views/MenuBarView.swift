@@ -120,6 +120,25 @@ struct MenuBarView: View {
                 .keyboardShortcut(.escape)
             }
 
+            Toggle(isOn: Binding(
+                get: { UserPreferences.shared.translateToEnglish },
+                set: { UserPreferences.shared.translateToEnglish = $0 }
+            )) {
+                Label("Translate to English", systemImage: "globe")
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .toggleStyle(.switch)
+            .controlSize(.small)
+
+            Button {
+                engine.importAndTranscribeFile()
+            } label: {
+                Label("Import Audio File...", systemImage: "doc.badge.plus")
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .keyboardShortcut("i", modifiers: [.command])
+            .disabled(!modelManager.isModelLoaded)
+
             Button {
                 AppDelegate.shared?.showHistory()
             } label: {

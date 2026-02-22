@@ -18,4 +18,9 @@ final class UserPreferencesTests: XCTestCase {
         let prefs = UserPreferences.shared
         XCTAssertEqual(prefs.hotkeyDisplayString, "\u{2318}\u{21E7}Space")
     }
+
+    func testTranslateToEnglishDefaultsFalse() {
+        let prefs = UserPreferences.shared
+        XCTAssertFalse(prefs.translateToEnglish)
+    }
 }

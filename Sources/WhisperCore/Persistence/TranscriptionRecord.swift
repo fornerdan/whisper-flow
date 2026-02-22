@@ -9,6 +9,7 @@ public final class TranscriptionRecord: Codable, Identifiable, Equatable, Hashab
     public var createdAt: Date
     public var isFavorite: Bool
     public var sourceApp: String?
+    public var sourceFile: String?
     public var title: String?
 
     /// Returns `title` if set, otherwise the first line of `text` truncated to 100 characters.
@@ -32,6 +33,7 @@ public final class TranscriptionRecord: Codable, Identifiable, Equatable, Hashab
         createdAt: Date = Date(),
         isFavorite: Bool = false,
         sourceApp: String? = nil,
+        sourceFile: String? = nil,
         title: String? = nil
     ) {
         self.id = id
@@ -42,6 +44,7 @@ public final class TranscriptionRecord: Codable, Identifiable, Equatable, Hashab
         self.createdAt = createdAt
         self.isFavorite = isFavorite
         self.sourceApp = sourceApp
+        self.sourceFile = sourceFile
         self.title = title
     }
 

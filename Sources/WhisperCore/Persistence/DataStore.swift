@@ -59,14 +59,16 @@ public final class DataStore {
         language: String,
         duration: TimeInterval,
         modelUsed: String,
-        sourceApp: String? = nil
+        sourceApp: String? = nil,
+        sourceFile: String? = nil
     ) async {
         let record = TranscriptionRecord(
             text: text,
             language: language,
             duration: duration,
             modelUsed: modelUsed,
-            sourceApp: sourceApp
+            sourceApp: sourceApp,
+            sourceFile: sourceFile
         )
 
         records.insert(record, at: 0)

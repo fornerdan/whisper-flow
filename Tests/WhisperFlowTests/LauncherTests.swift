@@ -35,7 +35,7 @@ final class LauncherTests: XCTestCase {
     // MARK: - LauncherAction
 
     func testLauncherActionCases() {
-        // Verify all 6 cases exist and are distinguishable
+        // Verify all 9 cases exist and are distinguishable
         let actions: [LauncherAction] = [
             .startRecording,
             .stopRecording,
@@ -44,9 +44,12 @@ final class LauncherTests: XCTestCase {
             .openHistory,
             .copyTranscription(TranscriptionRecord(
                 text: "test", language: "en", duration: 1.0, modelUsed: "tiny"
-            ))
+            )),
+            .toggleTranslation,
+            .importFile,
+            .exportHistory
         ]
-        XCTAssertEqual(actions.count, 6)
+        XCTAssertEqual(actions.count, 9)
 
         // Verify each case is distinct via pattern matching
         for (index, action) in actions.enumerated() {
@@ -57,6 +60,9 @@ final class LauncherTests: XCTestCase {
             case .openSettings:      XCTAssertEqual(index, 3)
             case .openHistory:       XCTAssertEqual(index, 4)
             case .copyTranscription: XCTAssertEqual(index, 5)
+            case .toggleTranslation: XCTAssertEqual(index, 6)
+            case .importFile:        XCTAssertEqual(index, 7)
+            case .exportHistory:     XCTAssertEqual(index, 8)
             }
         }
     }
