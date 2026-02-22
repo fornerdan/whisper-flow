@@ -91,7 +91,8 @@ final class TranscriptionEngine: ObservableObject, ModelLoadHandler {
             if UserPreferences.shared.playSound {
                 NSSound(named: "Tink")?.play()
             }
-            try audioCaptureEngine.startRecording()
+            let deviceUID = UserPreferences.shared.preferredMicDeviceUID
+            try audioCaptureEngine.startRecording(preferredDeviceUID: deviceUID.isEmpty ? nil : deviceUID)
             state = .recording
         } catch {
             state = .error("Failed to start recording: \(error.localizedDescription)")

@@ -3,6 +3,7 @@ import WhisperCore
 
 struct SettingsView: View {
     @AppStorage("language") private var language = "auto"
+    @AppStorage("historyRetentionDays") private var historyRetentionDays = 0
 
     var body: some View {
         NavigationStack {
@@ -12,6 +13,16 @@ struct SettingsView: View {
                         ForEach(supportedLanguages, id: \.code) { lang in
                             Text(lang.name).tag(lang.code)
                         }
+                    }
+                }
+
+                Section("History") {
+                    Picker("Auto-delete transcriptions", selection: $historyRetentionDays) {
+                        Text("Never").tag(0)
+                        Text("After 7 days").tag(7)
+                        Text("After 30 days").tag(30)
+                        Text("After 90 days").tag(90)
+                        Text("After 1 year").tag(365)
                     }
                 }
 

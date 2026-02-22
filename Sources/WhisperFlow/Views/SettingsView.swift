@@ -36,6 +36,9 @@ struct SettingsView: View {
 
 struct GeneralSettingsTab: View {
     @ObservedObject private var prefs = UserPreferences.shared
+    #if os(macOS)
+    @StateObject private var deviceManager = AudioDeviceManager()
+    #endif
 
     var body: some View {
         Form {
@@ -70,6 +73,32 @@ struct GeneralSettingsTab: View {
                     .controlSize(.small)
                 }
             }
+
+            Section("History") {
+                Picker("Auto-delete transcriptions", selection: $prefs.historyRetentionDays) {
+                    Text("Never").tag(0)
+                    Text("After 7 days").tag(7)
+                    Text("After 30 days").tag(30)
+                    Text("After 90 days").tag(90)
+                    Text("After 1 year").tag(365)
+                }
+            }
+
+            #if os(macOS)
+            Section("Microphone") {
+                Picker("Input Device", selection: $prefs.preferredMicDeviceUID) {
+                    Text("System Default").tag("")
+                    ForEach(deviceManager.availableDevices) { device in
+                        Text(device.name).tag(device.uid)
+                    }
+                }
+
+                Button("Refresh Devices") {
+                    deviceManager.refreshDevices()
+                }
+                .controlSize(.small)
+            }
+            #endif
         }
         .formStyle(.grouped)
         .padding()

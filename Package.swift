@@ -58,6 +58,8 @@ let package = Package(
                 .linkedFramework("Metal"),
                 .linkedFramework("MetalKit"),
                 .linkedFramework("AVFoundation"),
+                .linkedFramework("CoreAudio", .when(platforms: [.macOS])),
+                .linkedFramework("AudioToolbox", .when(platforms: [.macOS])),
             ]
         ),
         // Main macOS app

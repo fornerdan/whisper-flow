@@ -1,5 +1,8 @@
 import AVFoundation
 import Combine
+#if os(macOS)
+import CoreAudio
+#endif
 
 public enum AudioCaptureState {
     case idle
@@ -31,10 +34,16 @@ public final class AudioCaptureEngine: ObservableObject {
 
     public init() {}
 
-    public func startRecording() throws {
+    public func startRecording(preferredDeviceUID: String? = nil) throws {
         if case .recording = state { return }
 
         pcmBuffer.removeAll()
+
+        #if os(macOS)
+        if let uid = preferredDeviceUID, !uid.isEmpty {
+            try setPreferredInputDevice(uid: uid)
+        }
+        #endif
 
         let inputNode = audioEngine.inputNode
         let inputFormat = inputNode.outputFormat(forBus: 0)
@@ -81,6 +90,30 @@ public final class AudioCaptureEngine: ObservableObject {
         return samples
     }
 
+    #if os(macOS)
+    private func setPreferredInputDevice(uid: String) throws {
+        guard let deviceID = AudioDeviceManager.deviceID(forUID: uid) else {
+            throw AudioCaptureError.deviceNotFound
+        }
+        let inputNode = audioEngine.inputNode
+        guard let audioUnit = inputNode.audioUnit else {
+            throw AudioCaptureError.deviceNotFound
+        }
+        var id = deviceID
+        let status = AudioUnitSetProperty(
+            audioUnit,
+            kAudioOutputUnitProperty_CurrentDevice,
+            kAudioUnitScope_Global,
+            0,
+            &id,
+            UInt32(MemoryLayout<AudioDeviceID>.size)
+        )
+        if status != noErr {
+            throw AudioCaptureError.deviceNotFound
+        }
+    }
+    #endif
+
     private func processAudioBuffer(_ buffer: AVAudioPCMBuffer) {
         guard let converter = audioConverter else { return }
 
@@ -126,10 +159,11 @@ public final class AudioCaptureEngine: ObservableObject {
     }
 }
 
-public enum AudioCaptureError: LocalizedError {
+public enum AudioCaptureError: LocalizedError, Equatable {
     case noInputDevice
     case converterCreationFailed
     case engineStartFailed(String)
+    case deviceNotFound
 
     public var errorDescription: String? {
         switch self {
@@ -139,6 +173,8 @@ public enum AudioCaptureError: LocalizedError {
             return "Failed to create audio format converter"
         case .engineStartFailed(let reason):
             return "Failed to start audio engine: \(reason)"
+        case .deviceNotFound:
+            return "Selected microphone not found. It may have been disconnected."
         }
     }
 }

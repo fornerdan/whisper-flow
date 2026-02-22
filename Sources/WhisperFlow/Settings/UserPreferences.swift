@@ -16,6 +16,14 @@ final class UserPreferences: ObservableObject {
     @AppStorage("autoInjectText") var autoInjectText: Bool = true
     @AppStorage("copyToClipboard") var copyToClipboard: Bool = true
 
+    // MARK: - History
+
+    @AppStorage("historyRetentionDays") var historyRetentionDays: Int = 0  // 0 = keep forever
+
+    // MARK: - Audio Input (macOS)
+
+    @AppStorage("preferredMicDeviceUID") var preferredMicDeviceUID: String = ""  // empty = system default
+
     // MARK: - UI
 
     @AppStorage("showOverlayHUD") var showOverlayHUD: Bool = true

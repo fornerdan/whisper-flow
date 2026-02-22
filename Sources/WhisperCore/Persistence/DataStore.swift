@@ -137,4 +137,17 @@ public final class DataStore {
             saveToDisk()
         }
     }
+
+    // MARK: - Auto-delete
+
+    /// Removes records older than `retentionDays`. Pass 0 to keep all records.
+    public func purgeExpiredRecords(retentionDays: Int) {
+        guard retentionDays > 0 else { return }
+        guard let cutoff = Calendar.current.date(byAdding: .day, value: -retentionDays, to: Date()) else { return }
+        let beforeCount = records.count
+        records.removeAll { $0.createdAt < cutoff }
+        if records.count != beforeCount {
+            saveToDisk()
+        }
+    }
 }
