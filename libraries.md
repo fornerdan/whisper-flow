@@ -27,6 +27,8 @@ System frameworks — no separate license required.
 | Combine | macOS, iOS | Reactive state management in view models |
 | AppKit | macOS | Native macOS window management (NSWindow, NSPanel, menu bar extra) |
 | UniformTypeIdentifiers | macOS | UTType file type identifiers for audio file import picker |
+| CoreAudio | macOS | Audio input device enumeration and selection via `AudioObjectGetPropertyData` |
+| AudioToolbox | macOS | Audio unit property configuration for per-engine input device selection (`kAudioOutputUnitProperty_CurrentDevice`) |
 | Carbon | macOS | Global hotkey registration via `HIToolbox` event APIs |
 | ServiceManagement | macOS | Launch at login functionality |
 | UIKit | iOS | iOS UI framework, keyboard extension (`UIInputViewController`) |

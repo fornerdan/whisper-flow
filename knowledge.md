@@ -150,6 +150,8 @@ Open settings from the menu bar dropdown or via the gear icon.
 - **Show in Dock** — Toggle Dock icon visibility. When enabled, clicking the Dock icon opens the command palette.
 - **Auto-inject text** — Toggle automatically typing transcribed text into the focused app. Requires Accessibility permission.
 - **Copy to clipboard** — Toggle automatically copying transcriptions to the clipboard.
+- **Auto-delete transcriptions** — Set a retention policy: Never (default), After 7 days, After 30 days, After 90 days, or After 1 year. Records older than the retention period are automatically purged on launch and after each save.
+- **Input Device** — Choose which microphone to use for recording (macOS only). Lists all available input devices via Core Audio. "System Default" uses whatever the OS has selected. Refresh button to re-enumerate after connecting new hardware.
 
 **Transcription tab:**
 - **Language** — Choose from 98+ languages or leave on Auto-detect to let the model identify the language.
@@ -245,5 +247,6 @@ Go to the **Settings** tab.
 
 - **Sync with iCloud** — Toggle cross-device sync of transcription history. On by default.
 - **Language** — Choose from 28 languages or leave on Auto-detect.
+- **Auto-delete transcriptions** — Set a retention policy: Never (default), After 7 days, After 30 days, After 90 days, or After 1 year.
 - **Keyboard Extension** — Step-by-step setup instructions for enabling the keyboard (same steps as above).
 - **About** — Shows the app version and whisper.cpp engine version (v1.7.4).

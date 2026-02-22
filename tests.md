@@ -1,6 +1,6 @@
 # WhisperFlow Tests
 
-**Total: 79 tests across 10 test files**
+**Total: 101 tests across 13 test files**
 
 > Tests require Xcode (not just Command Line Tools) to run via `xcodebuild test -scheme WhisperFlowTests -destination 'platform=macOS'`. SPM `swift test` does not work because XCTest is only available through the Xcode toolchain.
 
@@ -49,20 +49,20 @@
 | `testDisplayTitleReturnsTextWhenTitleIsEmpty` | `displayTitle` falls back to text when title is empty string |
 | `testDisplayTitleReturnsFirstLineOnly` | `displayTitle` returns only the first line of multi-line text |
 | `testDisplayTitleHandlesCarriageReturn` | `displayTitle` handles `\r\n` line endings |
-| `testDisplayTitleTruncatesLongText` | `displayTitle` truncates text over 100 chars with "…" |
+| `testDisplayTitleTruncatesLongText` | `displayTitle` truncates text over 100 chars with "..." |
 | `testDisplayTitleDoesNotTruncateExactly100Chars` | `displayTitle` does not truncate text at exactly 100 chars |
 | `testDisplayTitlePrefersCustomTitleOverLongText` | Custom title takes precedence over long text |
 | `testDecodingWithoutTitleField` | Backward compatibility — JSON without `title` decodes with nil title |
 | `testDecodingWithTitleField` | JSON with `title` decodes correctly |
 | `testEncodingIncludesTitle` | Encoding includes title in JSON output |
 | `testRoundTripEncodingDecoding` | Encode → decode preserves all fields including title |
-| `testModifiedAtDefaultsToCreatedAt` | New records have `modifiedAt` equal to `createdAt` |
-| `testModifiedAtCanBeSetExplicitly` | `modifiedAt` can be set to a custom value via init |
-| `testDecodingWithoutModifiedAtField` | Backward compatibility — JSON without `modifiedAt` falls back to `createdAt` |
-| `testDecodingWithModifiedAtField` | JSON with `modifiedAt` decodes correctly as a distinct value |
-| `testEncodingIncludesModifiedAt` | Encoding includes `modifiedAt` in JSON output |
+| `testSourceFileDefaultsToNil` | New records have `sourceFile` as nil by default |
+| `testSourceFileCanBeSetViaInit` | `sourceFile` can be set through the initializer |
+| `testDecodingWithoutSourceFileField` | Backward compatibility — JSON without `sourceFile` decodes with nil |
+| `testEncodingIncludesSourceFile` | Encoding includes `sourceFile` in JSON output |
 | `testRenameRecordSetsTitle` | `DataStore.renameRecord` sets title, and clearing with empty string reverts to nil |
 | `testSearchMatchesTitle` | `DataStore.fetchRecords` search matches against both title and text |
+| `testDisplayTitlePrefersCustomTitleOverLongText` | Custom title takes precedence over long text |
 
 ### `Tests/WhisperFlowTests/TextInjectorTests.swift` (4 tests)
 
@@ -112,38 +112,78 @@
 | `testHotkeyCallbacksAreNilByDefault` | Both `onHotkeyPressed` and `onLauncherHotkeyPressed` are optional closures |
 | `testLauncherHotkeyCallbackIsSettable` | Can set and invoke `onLauncherHotkeyPressed` closure |
 
-### `Tests/WhisperFlowTests/CloudSyncTests.swift` (10 tests)
-
-| Test | Description |
-|------|-------------|
-| `testSaveTranscriptionPushesToSyncEngine` | Saving a transcription calls `pushRecord` on the sync engine |
-| `testDeleteRecordPushesDeletion` | Deleting a record calls `pushDeletion` on the sync engine |
-| `testToggleFavoriteUpdatesModifiedAt` | Toggling favorite updates the record's `modifiedAt` timestamp |
-| `testRenameUpdatesModifiedAt` | Renaming a record updates the record's `modifiedAt` timestamp |
-| `testMergeRemoteUpsertNewRecord` | Remote record with unknown ID gets inserted into local store |
-| `testMergeRemoteUpsertConflictNewerWins` | Remote record with newer `modifiedAt` overwrites local record |
-| `testMergeRemoteUpsertConflictLocalWins` | Local record with newer `modifiedAt` is kept over remote |
-| `testMergeRemoteDeletion` | Remote deletion removes the corresponding local record |
-| `testInitialSyncUploadsAllLocal` | `performInitialSync` receives all local records |
-| `testSyncDisabledDoesNotPush` | No sync operations occur when engine `isEnabled` is false |
-
-### `Tests/WhisperFlowTests/UserPreferencesTests.swift` (3 tests)
+### `Tests/WhisperFlowTests/UserPreferencesTests.swift` (4 tests)
 
 | Test | Description |
 |------|-------------|
 | `testShowInDockDefaultsFalse` | `showInDock` defaults to false |
 | `testLauncherHotkeyDisplayString` | Returns "⌘⇧W" |
 | `testHotkeyDisplayString` | Returns "⌘⇧Space" (regression check) |
+| `testTranslateToEnglishDefaultsFalse` | `translateToEnglish` defaults to false |
+
+### `Tests/WhisperFlowTests/HistoryExporterTests.swift` (15 tests)
+
+| Test | Description |
+|------|-------------|
+| `testExportFormatFileExtensions` | Verifies `.txt`, `.json`, `.csv` file extensions |
+| `testExportFormatAllCases` | `ExportFormat` has exactly 3 cases |
+| `testPlainTextExportContainsText` | Plain text output contains transcription text, language, and model |
+| `testPlainTextExportEmptyRecords` | Empty records export as "No transcriptions.\n" |
+| `testPlainTextExportIncludesSourceFile` | Plain text includes "Source File:" when present |
+| `testJSONExportIsValidJSON` | JSON output is valid JSON array with correct text field |
+| `testJSONExportEmptyRecords` | Empty records export as empty JSON array |
+| `testCSVExportHasHeader` | CSV output starts with header row and has correct line count |
+| `testCSVExportEmptyRecords` | Empty records export as header-only CSV |
+| `testCSVEscapesCommasInText` | Text containing commas is properly quoted |
+| `testCSVEscapesQuotesInText` | Double quotes in text are doubled and field is quoted |
+| `testCSVEscapesNewlinesInText` | Newlines in text are preserved within quoted field |
+| `testCsvEscapeNoSpecialChars` | Plain text passes through unescaped |
+| `testCsvEscapeWithComma` | Comma triggers quoting |
+| `testCsvEscapeWithQuotes` | Quotes are doubled and field is quoted |
+
+### `Tests/WhisperFlowTests/AudioFileLoaderTests.swift` (7 tests)
+
+| Test | Description |
+|------|-------------|
+| `testSupportedExtensions` | `supportedExtensions` matches expected set (wav, mp3, m4a, aac, flac, mp4, mov, caf, aiff, aif) |
+| `testIsSupportedReturnsTrueForKnownFormats` | Known formats (wav, mp3, m4a, MP4, FLAC) return true (case-insensitive) |
+| `testIsSupportedReturnsFalseForUnknownFormats` | Unknown formats (txt, pdf, ogg, empty) return false |
+| `testLoadSamplesThrowsForUnsupportedFormat` | Loading `.ogg` throws `AudioFileError.unsupportedFormat("ogg")` |
+| `testLoadSamplesThrowsForMissingFile` | Loading nonexistent `.wav` throws `AudioFileError.fileNotFound` |
+| `testMaxDurationIs30Minutes` | `maxDuration` is 1800 seconds |
+| `testErrorDescriptions` | Error cases have correct localized descriptions |
+
+### `Tests/WhisperFlowTests/AutoDeleteTests.swift` (4 tests)
+
+| Test | Description |
+|------|-------------|
+| `testPurgeDeletesOldRecords` | Freshly saved records survive a 30-day retention purge |
+| `testPurgeKeepsRecentRecords` | Recently created record is not purged with 7-day retention |
+| `testPurgeWithZeroRetentionKeepsAll` | `retentionDays: 0` (keep forever) does not delete any records |
+| `testPurgeWithNegativeRetentionKeepsAll` | Negative retention days treated as no-op |
+
+### `Tests/WhisperFlowTests/AudioDeviceTests.swift` (5 tests, macOS only)
+
+| Test | Description |
+|------|-------------|
+| `testAudioDeviceManagerListsDevices` | `availableDevices` is non-empty (at least one input device) |
+| `testAudioDeviceManagerHasDefault` | At least one device has `isDefault == true` |
+| `testRefreshDevicesPopulatesUIDs` | All enumerated devices have non-empty UID and name |
+| `testStartRecordingWithNilDeviceUsesDefault` | Passing nil for device UID does not crash |
+| `testStartRecordingWithInvalidDeviceThrows` | Invalid device UID throws `AudioCaptureError.deviceNotFound` |
 
 ## Coverage Areas
 
 - **Audio Capture** — sample rate, channel count, initial state
+- **Audio Device Selection** — device enumeration, default detection, UID validation, invalid device error handling (macOS)
+- **Audio File Import** — supported extensions, case-insensitive lookup, error cases (unsupported format, missing file), max duration, error descriptions
 - **Transcription** — segment/result data types, error descriptions
 - **Model Management** — catalog contents, lookup, speed/quality ordering, file naming, download URLs
-- **Transcription Record** — title property, displayTitle logic (truncation, first line, fallback), Codable backward compatibility (title, sourceFile, modifiedAt), rename via DataStore, title-aware search
+- **Transcription Record** — title property, displayTitle logic (truncation, first line, fallback), Codable backward compatibility (title, sourceFile), rename via DataStore, title-aware search
+- **History Export** — format file extensions, all three export formats (plain text, JSON, CSV), empty record handling, CSV escaping (commas, quotes, newlines)
+- **Auto-delete History** — retention purge with various retention days (0, negative, 7, 30), record survival verification
 - **System Integration** — accessibility trust check, audio permissions, error types
 - **Launcher** — LauncherItem data model, LauncherAction enum cases, LauncherPanel show/hide/toggle lifecycle
 - **App Intents** — intent titles, descriptions, parameters, IntentError localization, shortcuts provider count
 - **Hotkey Manager** — default key bindings (recording + launcher), callback property access and assignment
-- **iCloud Sync** — push on save/delete, modifiedAt updates on mutations, merge logic (new record, conflict newer/older wins, deletion), initial sync upload, disabled engine no-op
-- **User Preferences** — dock visibility default, hotkey display strings
+- **User Preferences** — dock visibility default, hotkey display strings, translate default

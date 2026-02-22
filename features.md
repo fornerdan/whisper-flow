@@ -14,7 +14,9 @@ On-device speech-to-text powered by [whisper.cpp](https://github.com/ggerganov/w
 | Transcription history | Yes | Yes |
 | iCloud sync (CloudKit) | Yes | Yes |
 | History export (Plain Text, JSON, CSV) | Yes | Yes |
+| Auto-delete history (retention policy) | Yes | Yes |
 | Audio file import (wav, mp3, m4a, etc.) | Yes | - |
+| Mic input device selection | Yes | - |
 | Copy to clipboard | Yes | Yes |
 | Share transcription (native share sheet) | Yes | Yes |
 | Rename transcription (custom title) | Yes | Yes |
@@ -42,14 +44,16 @@ WhisperFlow lives in the menu bar and works system-wide.
 - **Sound feedback** — Tink/Pop sounds on start/stop (configurable)
 - **Translation mode** — Translate speech in any language to English using whisper.cpp's built-in translation. Toggle in menu bar, launcher, or Settings
 - **Audio file import** — Transcribe audio/video files (wav, mp3, m4a, aac, flac, mp4, mov, caf, aiff) via file picker. Max 30 minutes. Source file name tracked in history
+- **Mic input device selection** — Choose a specific microphone instead of always using the system default. Useful for users with multiple mics (e.g. USB mic + built-in). Device selection persists across app restarts. Refresh button to re-enumerate devices after plugging in new hardware
 
 ### User Interface
 - **Menu bar extra** — Compact window with status, last transcription, and quick actions
 - **Command palette launcher** — Spotlight-style panel (Cmd+Shift+W) for quick actions and transcription search with keyboard navigation. Includes: Start/Stop/Cancel Recording, Import Audio File, Toggle Translation, Export History, Open Settings, Open History
 - **Floating overlay HUD** — Recording/transcribing indicator positioned at top of screen
 - **Optional Dock icon** — Toggle "Show in Dock" in Settings; clicking the Dock icon opens the launcher
-- **Transcription history** — Searchable list with favorites, source app tracking, detail view, custom titles (rename), native sharing, and export
+- **Transcription history** — Searchable list with favorites, source app tracking, detail view, custom titles (rename), native sharing, export, and auto-delete
 - **History export** — Export transcriptions as Plain Text, JSON, or CSV. Choose scope: All, Favorites Only, or Date Range. Via toolbar button or launcher command
+- **Auto-delete history** — Configurable retention policy to automatically purge transcriptions older than 7, 30, 90, or 365 days. Set to "Never" (default) to keep all records. Cleanup runs on launch and after each save
 - **Settings panel** — General, Transcription, Hotkey, and About tabs
 
 ### Model Management
@@ -125,13 +129,14 @@ WhisperFlow for iOS provides a standalone recording app and a custom keyboard ex
 
 Both platforms share a common library:
 
-- **AudioCaptureEngine** — AVFoundation-based 16kHz mono capture with format conversion
+- **AudioCaptureEngine** — AVFoundation-based 16kHz mono capture with format conversion and optional per-engine input device selection (macOS)
+- **AudioDeviceManager** — Core Audio device enumeration for input devices (macOS only). Lists available microphones with name, UID, and default status. Provides device lookup by UID for setting a specific input device on AVAudioEngine's AudioUnit
 - **AudioFileLoader** — Load audio/video files (wav, mp3, m4a, aac, flac, mp4, mov, caf, aiff) and convert to 16kHz mono Float32 samples via AVAudioFile + AVAudioConverter. 30-minute max duration guard
 - **WhisperContext** — whisper.cpp C API wrapper with async inference and built-in translation support
 - **StreamingTranscriber** — Chunked real-time transcription with overlap
 - **ModelCatalog** — 10 model definitions with platform-aware recommendations
 - **ModelManager** — Download, load, delete with progress tracking (decoupled via `ModelLoadHandler` protocol)
-- **DataStore** — JSON-backed transcription history with search, favorites, rename, pagination, and optional CloudKit sync
+- **DataStore** — JSON-backed transcription history with search, favorites, rename, pagination, auto-delete (retention policy purge), and optional CloudKit sync
 - **TranscriptionRecord** — Data model (text, language, duration, model, source app, source file, favorite, optional title with displayTitle computed property, modifiedAt for sync conflict resolution)
 - **CloudSyncEngine** — Protocol + `CKCloudSyncEngine` implementation for iCloud sync via CloudKit private database (custom zone, change tokens, batch operations, CKSubscription)
 - **SyncMetadataStore** — Tracks pending uploads/deletions and persists CKServerChangeToken for incremental fetches
