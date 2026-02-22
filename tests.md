@@ -1,6 +1,6 @@
 # WhisperFlow Tests
 
-**Total: 37 tests across 5 test files**
+**Total: 64 tests across 9 test files**
 
 > Tests require Xcode (not just Command Line Tools) to run via `xcodebuild test -scheme WhisperFlowTests -destination 'platform=macOS'`. SPM `swift test` does not work because XCTest is only available through the Xcode toolchain.
 
@@ -68,6 +68,53 @@
 | `testAudioCaptureErrorDescriptions` | `AudioCaptureError` cases have non-nil error descriptions with expected content |
 | `testModelErrorDescription` | `ModelError.modelNotFound` has a non-nil error description containing the model name |
 
+### `Tests/WhisperFlowTests/LauncherTests.swift` (10 tests)
+
+| Test | Description |
+|------|-------------|
+| `testLauncherItemHasUniqueId` | Each `LauncherItem` gets a unique UUID |
+| `testLauncherItemProperties` | icon, title, subtitle, and action are stored correctly |
+| `testLauncherItemWithNilSubtitle` | subtitle can be nil |
+| `testLauncherActionCases` | All 6 `LauncherAction` enum cases exist and are distinguishable |
+| `testLauncherPanelInitialState` | `isVisible` is false after init |
+| `testLauncherPanelShowMakesVisible` | After `show()`, `isVisible` becomes true |
+| `testLauncherPanelHideMakesInvisible` | After `show()` then `hide()`, `isVisible` is false |
+| `testLauncherPanelToggleFromHidden` | `toggle()` from hidden makes panel visible |
+| `testLauncherPanelToggleFromVisible` | `toggle()` from visible hides the panel |
+| `testLauncherPanelHideWhenAlreadyHidden` | `hide()` when already hidden is a no-op |
+
+### `Tests/WhisperFlowTests/IntentTests.swift` (10 tests)
+
+| Test | Description |
+|------|-------------|
+| `testToggleRecordingIntentTitle` | Static title is "Toggle Recording" |
+| `testToggleRecordingIntentDescription` | Static description is set |
+| `testToggleRecordingIntentOpensApp` | `openAppWhenRun` is true |
+| `testGetLastTranscriptionIntentTitle` | Static title is "Get Last Transcription" |
+| `testGetLastTranscriptionIntentDescription` | Static description is set |
+| `testSearchTranscriptionsIntentTitle` | Static title is "Search Transcriptions" |
+| `testSearchTranscriptionsIntentDescription` | Static description is set |
+| `testSearchTranscriptionsIntentHasParameter` | `searchText` parameter exists and is settable |
+| `testIntentErrorDescription` | `IntentError.noTranscriptions` has localized description "No transcriptions found" |
+| `testWhisperFlowShortcutsProviderHasThreeShortcuts` | `appShortcuts` count is 3 |
+
+### `Tests/WhisperFlowTests/HotkeyManagerTests.swift` (4 tests)
+
+| Test | Description |
+|------|-------------|
+| `testDefaultRecordingHotkey` | keyCode is `kVK_Space`, modifiers is `cmdKey \| shiftKey` |
+| `testDefaultLauncherHotkey` | launcherKeyCode is `kVK_ANSI_W`, launcherModifiers is `cmdKey \| shiftKey` |
+| `testHotkeyCallbacksAreNilByDefault` | Both `onHotkeyPressed` and `onLauncherHotkeyPressed` are optional closures |
+| `testLauncherHotkeyCallbackIsSettable` | Can set and invoke `onLauncherHotkeyPressed` closure |
+
+### `Tests/WhisperFlowTests/UserPreferencesTests.swift` (3 tests)
+
+| Test | Description |
+|------|-------------|
+| `testShowInDockDefaultsFalse` | `showInDock` defaults to false |
+| `testLauncherHotkeyDisplayString` | Returns "⌘⇧W" |
+| `testHotkeyDisplayString` | Returns "⌘⇧Space" (regression check) |
+
 ## Coverage Areas
 
 - **Audio Capture** — sample rate, channel count, initial state
@@ -75,3 +122,7 @@
 - **Model Management** — catalog contents, lookup, speed/quality ordering, file naming, download URLs
 - **Transcription Record** — title property, displayTitle logic (truncation, first line, fallback), Codable backward compatibility, rename via DataStore, title-aware search
 - **System Integration** — accessibility trust check, audio permissions, error types
+- **Launcher** — LauncherItem data model, LauncherAction enum cases, LauncherPanel show/hide/toggle lifecycle
+- **App Intents** — intent titles, descriptions, parameters, IntentError localization, shortcuts provider count
+- **Hotkey Manager** — default key bindings (recording + launcher), callback property access and assignment
+- **User Preferences** — dock visibility default, hotkey display strings

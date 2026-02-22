@@ -16,7 +16,7 @@ public final class TranscriptionRecord: Codable, Identifiable, Equatable, Hashab
         if let title, !title.isEmpty {
             return title
         }
-        let firstLine = text.prefix(while: { $0 != "\n" && $0 != "\r" })
+        let firstLine = text.components(separatedBy: .newlines).first ?? text
         if firstLine.count > 100 {
             return String(firstLine.prefix(100)) + "…"
         }

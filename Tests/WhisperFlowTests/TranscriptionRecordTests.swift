@@ -1,4 +1,5 @@
 import XCTest
+@testable import WhisperCore
 @testable import WhisperFlow
 
 final class TranscriptionRecordTests: XCTestCase {
@@ -163,18 +164,16 @@ final class TranscriptionRecordTests: XCTestCase {
     // MARK: - DataStore Rename
 
     @MainActor
-    func testRenameRecordSetsTitle() throws {
+    func testRenameRecordSetsTitle() async throws {
         let store = DataStore.shared
         // Save a new transcription
         let text = "Rename test \(UUID().uuidString)"
-        Task { @MainActor in
-            await store.saveTranscription(
-                text: text,
-                language: "en",
-                duration: 1.0,
-                modelUsed: "tiny"
-            )
-        }
+        await store.saveTranscription(
+            text: text,
+            language: "en",
+            duration: 1.0,
+            modelUsed: "tiny"
+        )
 
         // Find the record we just saved
         let records = try store.fetchRecords(searchText: text)
@@ -202,19 +201,17 @@ final class TranscriptionRecordTests: XCTestCase {
     }
 
     @MainActor
-    func testSearchMatchesTitle() throws {
+    func testSearchMatchesTitle() async throws {
         let store = DataStore.shared
         let uniqueText = "searchtest \(UUID().uuidString)"
         let uniqueTitle = "UniqueSearchTitle\(Int.random(in: 10000...99999))"
 
-        Task { @MainActor in
-            await store.saveTranscription(
-                text: uniqueText,
-                language: "en",
-                duration: 1.0,
-                modelUsed: "tiny"
-            )
-        }
+        await store.saveTranscription(
+            text: uniqueText,
+            language: "en",
+            duration: 1.0,
+            modelUsed: "tiny"
+        )
 
         let records = try store.fetchRecords(searchText: uniqueText)
         guard let record = records.first else {

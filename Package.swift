@@ -91,8 +91,11 @@ let package = Package(
         ),
         .testTarget(
             name: "WhisperFlowTests",
-            dependencies: ["WhisperBridge"],
-            path: "Tests/WhisperFlowTests"
+            dependencies: ["WhisperBridge", "WhisperCore", "WhisperFlow"],
+            path: "Tests/WhisperFlowTests",
+            linkerSettings: [
+                .linkedFramework("AppIntents"),
+            ]
         )
     ]
 )

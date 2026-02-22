@@ -1,6 +1,7 @@
 import SwiftUI
 import WhisperCore
 
+@MainActor
 struct HistoryView: View {
     @State private var searchText = ""
     @State private var favoritesOnly = false

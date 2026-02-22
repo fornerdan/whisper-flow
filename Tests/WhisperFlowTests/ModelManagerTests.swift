@@ -1,4 +1,5 @@
 import XCTest
+@testable import WhisperCore
 @testable import WhisperFlow
 
 final class ModelManagerTests: XCTestCase {
@@ -44,6 +45,7 @@ final class ModelManagerTests: XCTestCase {
         XCTAssertTrue(WhisperModel.ModelQuality.good < WhisperModel.ModelQuality.great)
     }
 
+    @MainActor
     func testModelsDirectoryExists() {
         let dir = ModelManager.modelsDirectory
         XCTAssertTrue(FileManager.default.fileExists(atPath: dir.path))

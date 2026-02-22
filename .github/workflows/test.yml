@@ -1,0 +1,81 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache whisper.cpp xcframework
+        id: cache-whisper
+        uses: actions/cache@v4
+        with:
+          path: Vendor/whisper.xcframework
+          key: whisper-xcframework-v1.7.4-macos
+
+      - name: Build whisper.cpp xcframework
+        if: steps.cache-whisper.outputs.cache-hit != 'true'
+        run: |
+          WHISPER_VERSION="v1.7.4"
+          VENDOR_DIR="$GITHUB_WORKSPACE/Vendor"
+          WHISPER_DIR="$VENDOR_DIR/whisper.cpp"
+
+          mkdir -p "$VENDOR_DIR"
+          git clone --depth 1 --branch "$WHISPER_VERSION" https://github.com/ggerganov/whisper.cpp.git "$WHISPER_DIR"
+          cd "$WHISPER_DIR"
+
+          # Build for macOS (arm64 + x86_64)
+          mkdir -p build-macos && cd build-macos
+          cmake .. \
+            -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" \
+            -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0 \
+            -DWHISPER_METAL=ON \
+            -DWHISPER_COREML=OFF \
+            -DBUILD_SHARED_LIBS=OFF \
+            -DCMAKE_BUILD_TYPE=Release
+          cmake --build . --config Release -j$(sysctl -n hw.ncpu)
+          cd ..
+
+          # Create xcframework (macOS only — sufficient for tests)
+          HEADERS_DIR="$WHISPER_DIR/xcframework-headers"
+          mkdir -p "$HEADERS_DIR"
+          cp include/whisper.h "$HEADERS_DIR/"
+          cp ggml/include/ggml.h "$HEADERS_DIR/" 2>/dev/null || true
+          cp ggml/include/ggml-alloc.h "$HEADERS_DIR/" 2>/dev/null || true
+          cp ggml/include/ggml-backend.h "$HEADERS_DIR/" 2>/dev/null || true
+
+          MACOS_LIBS_DIR="$WHISPER_DIR/build-macos-combined"
+          mkdir -p "$MACOS_LIBS_DIR"
+          cp build-macos/src/libwhisper.a "$MACOS_LIBS_DIR/" 2>/dev/null || true
+          find build-macos -name "libggml*.a" -exec cp {} "$MACOS_LIBS_DIR/" \; 2>/dev/null || true
+          libtool -static -o "$MACOS_LIBS_DIR/libwhisper-combined.a" "$MACOS_LIBS_DIR"/*.a
+
+          xcodebuild -create-xcframework \
+            -library "$MACOS_LIBS_DIR/libwhisper-combined.a" -headers "$HEADERS_DIR" \
+            -output "$VENDOR_DIR/whisper.xcframework"
+
+          # Copy individual libs for SPM linker settings
+          MACOS_FRAMEWORK_DIR="$VENDOR_DIR/whisper.xcframework/macos-arm64_x86_64"
+          find build-macos -name "libggml*.a" -exec cp {} "$MACOS_FRAMEWORK_DIR/" \; 2>/dev/null || true
+          cp build-macos/src/libwhisper.a "$MACOS_FRAMEWORK_DIR/" 2>/dev/null || true
+
+          # Cleanup source
+          rm -rf "$WHISPER_DIR"
+
+      - name: Run tests
+        run: |
+          set -o pipefail
+          xcodebuild test \
+            -scheme WhisperFlow-Package \
+            -destination 'platform=macOS' \
+            -only-testing WhisperFlowTests \
+            -resultBundlePath TestResults \
+            CODE_SIGN_IDENTITY="-" \
+            CODE_SIGNING_REQUIRED=NO \
+            | xcpretty --color
