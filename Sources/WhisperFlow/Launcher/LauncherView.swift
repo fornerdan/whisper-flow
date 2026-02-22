@@ -10,6 +10,9 @@ enum LauncherAction {
     case openSettings
     case openHistory
     case copyTranscription(TranscriptionRecord)
+    case toggleTranslation
+    case importFile
+    case exportHistory
 }
 
 struct LauncherItem: Identifiable {
@@ -87,6 +90,28 @@ struct LauncherView: View {
         default:
             break
         }
+
+        commands.append(LauncherItem(
+            icon: "doc.badge.plus",
+            title: "Import Audio File",
+            subtitle: "Transcribe an audio or video file",
+            action: .importFile
+        ))
+
+        let translateEnabled = UserPreferences.shared.translateToEnglish
+        commands.append(LauncherItem(
+            icon: "globe",
+            title: translateEnabled ? "Disable Translation" : "Translate to English",
+            subtitle: translateEnabled ? "Currently translating to English" : "Translate speech to English",
+            action: .toggleTranslation
+        ))
+
+        commands.append(LauncherItem(
+            icon: "square.and.arrow.up",
+            title: "Export History",
+            subtitle: "Export transcriptions as text, JSON, or CSV",
+            action: .exportHistory
+        ))
 
         commands.append(LauncherItem(
             icon: "gear",
@@ -206,6 +231,12 @@ struct LauncherView: View {
             case .copyTranscription(let record):
                 NSPasteboard.general.clearContents()
                 NSPasteboard.general.setString(record.text, forType: .string)
+            case .toggleTranslation:
+                UserPreferences.shared.translateToEnglish.toggle()
+            case .importFile:
+                TranscriptionEngine.shared.importAndTranscribeFile()
+            case .exportHistory:
+                AppDelegate.shared?.showHistory()
             }
         }
     }

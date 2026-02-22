@@ -65,7 +65,7 @@ let package = Package(
             name: "WhisperFlow",
             dependencies: ["WhisperCore", "WhisperBridge"],
             path: "Sources/WhisperFlow",
-            exclude: ["Resources/Info.plist", "Resources/WhisperFlow.entitlements"],
+            exclude: ["Resources/Info.plist", "Resources/WhisperFlow.entitlements", "Resources/PrivacyInfo.xcprivacy"],
             swiftSettings: [
                 .define("SPM_BUILD")
             ],

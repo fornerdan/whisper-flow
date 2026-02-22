@@ -9,6 +9,7 @@ struct HistoryView: View {
     @State private var selectedRecord: TranscriptionRecord?
     @State private var recordToRename: TranscriptionRecord?
     @State private var renameText = ""
+    @State private var showExportSheet = false
 
     var body: some View {
         NavigationSplitView {
@@ -84,6 +85,18 @@ struct HistoryView: View {
         .frame(minWidth: 600, minHeight: 400)
         .onAppear { refreshRecords() }
         .navigationTitle("Transcription History")
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button {
+                    showExportSheet = true
+                } label: {
+                    Label("Export", systemImage: "square.and.arrow.up")
+                }
+            }
+        }
+        .sheet(isPresented: $showExportSheet) {
+            ExportSheet()
+        }
         .alert("Rename Transcription", isPresented: Binding(
             get: { recordToRename != nil },
             set: { if !$0 { recordToRename = nil } }

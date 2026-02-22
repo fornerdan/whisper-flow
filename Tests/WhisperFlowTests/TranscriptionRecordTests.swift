@@ -161,6 +161,52 @@ final class TranscriptionRecordTests: XCTestCase {
         XCTAssertEqual(decoded.displayTitle, "Saved Title")
     }
 
+    // MARK: - sourceFile
+
+    func testSourceFileDefaultsToNil() {
+        let record = makeRecord()
+        XCTAssertNil(record.sourceFile)
+    }
+
+    func testSourceFileCanBeSetViaInit() {
+        let record = TranscriptionRecord(
+            text: "Hello", language: "en", duration: 1.0, modelUsed: "tiny",
+            sourceFile: "recording.m4a"
+        )
+        XCTAssertEqual(record.sourceFile, "recording.m4a")
+    }
+
+    func testDecodingWithoutSourceFileField() throws {
+        // Simulates loading a record saved before sourceFile was added
+        let json = """
+        {
+            "id": "12345678-1234-1234-1234-123456789ABC",
+            "text": "Old transcription",
+            "language": "en",
+            "duration": 5.0,
+            "modelUsed": "tiny",
+            "createdAt": "2025-01-01T12:00:00Z",
+            "isFavorite": false
+        }
+        """
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        let record = try decoder.decode(TranscriptionRecord.self, from: Data(json.utf8))
+        XCTAssertNil(record.sourceFile)
+    }
+
+    func testEncodingIncludesSourceFile() throws {
+        let record = TranscriptionRecord(
+            text: "Test", language: "en", duration: 1.0, modelUsed: "tiny",
+            sourceFile: "meeting.wav"
+        )
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        let data = try encoder.encode(record)
+        let dict = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+        XCTAssertEqual(dict["sourceFile"] as? String, "meeting.wav")
+    }
+
     // MARK: - DataStore Rename
 
     @MainActor

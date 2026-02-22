@@ -38,7 +38,7 @@ final class TranscriptionEngine: ObservableObject, ModelLoadHandler {
     @Published var audioLevel: Float = 0
 
     private let audioCaptureEngine = AudioCaptureEngine()
-    private var whisperContext: WhisperContext?
+    var whisperContext: WhisperContext?
     private var audioCancellable: AnyCancellable?
 
     private init() {
@@ -124,7 +124,8 @@ final class TranscriptionEngine: ObservableObject, ModelLoadHandler {
 
                 let result = try await context.transcribe(
                     samples: samples,
-                    language: language
+                    language: language,
+                    translate: prefs.translateToEnglish
                 )
 
                 let text = result.text

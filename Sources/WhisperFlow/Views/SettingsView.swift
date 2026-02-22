@@ -90,6 +90,12 @@ struct TranscriptionSettingsTab: View {
                         Text(lang.name).tag(lang.code)
                     }
                 }
+
+                Toggle("Translate to English", isOn: $prefs.translateToEnglish)
+
+                Text("When enabled, speech in any language will be translated to English. Uses whisper.cpp's built-in translation.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
 
             Section("Model") {
