@@ -34,7 +34,7 @@ WhisperFlow also supports **streaming preview** — partial transcription result
 
 Press **Cmd+Shift+W** to open the command palette — a Spotlight-style floating panel for quick actions and transcription search.
 
-- **Commands** — Start/Stop/Cancel Recording, Open Settings, Open History. Available commands change based on the current recording state.
+- **Commands** — Start/Stop/Cancel Recording, Import Audio File, Translate to English (toggle), Export History, Open Settings, Open History. Available commands change based on the current recording state.
 - **Search** — Type to search your transcription history. Matching results appear above the commands.
 - **Keyboard navigation** — Use Up/Down arrow keys to navigate, Enter to execute, Escape to dismiss.
 - **Click-away dismiss** — Clicking anywhere outside the launcher closes it automatically.
@@ -66,6 +66,28 @@ To use these:
 3. Add any of the three actions to your shortcut.
 4. You can also trigger them via Siri using the phrases listed above.
 
+### Translation Mode
+
+Translate speech in any language to English using whisper.cpp's built-in translation:
+
+1. **Toggle from menu bar** — In the menu bar popup, flip the "Translate to English" switch in the actions section.
+2. **Toggle from launcher** — Open the command palette (Cmd+Shift+W) and select "Translate to English" or "Disable Translation".
+3. **Toggle from Settings** — Go to **Settings > Transcription** and enable "Translate to English".
+
+When enabled, all transcriptions (both live recording and file import) will be translated to English regardless of the spoken language.
+
+### Audio File Import
+
+Transcribe audio or video files without recording from the microphone:
+
+1. **From menu bar** — Click **Import Audio File...** (Cmd+I) in the actions section.
+2. **From launcher** — Open the command palette and select **Import Audio File**.
+3. A file picker opens filtered to supported formats: wav, mp3, m4a, aac, flac, mp4, mov, caf, aiff.
+4. Select a file (maximum 30 minutes duration).
+5. The file is loaded, converted to 16kHz mono, and transcribed using the loaded model.
+6. The result is saved to history with the source file name tracked for provenance.
+7. If clipboard copy is enabled, the text is also copied to the clipboard.
+
 ### Transcription History
 
 Open history from the menu bar dropdown by clicking **History** (or the clock icon).
@@ -77,6 +99,22 @@ Open history from the menu bar dropdown by clicking **History** (or the clock ic
 - **Share** — Right-click and choose **Share…** to open the native share sheet, or use the Share button in the detail view toolbar.
 - **Rename** — Right-click and choose **Rename…** (or use the Rename button in the detail view toolbar) to give a transcription a custom title. The title appears in the list instead of the raw text. Leave the title empty to revert to showing the original text.
 - **Delete** — Right-click a transcription and choose **Delete**.
+- **Export** — Click the **Export** button in the toolbar to open the Export sheet.
+
+### History Export
+
+Export your transcription history in multiple formats:
+
+1. Open **Transcription History** and click the **Export** button in the toolbar. Or use the **Export History** command in the launcher.
+2. Choose a **Format**:
+   - **Plain Text** — Human-readable with metadata headers and separator lines between records.
+   - **JSON** — Full Codable export of all record fields (ISO 8601 dates, sorted keys).
+   - **CSV** — Spreadsheet-compatible with proper quoting/escaping for commas, quotes, and newlines in text.
+3. Choose a **Scope**:
+   - **All Transcriptions** — Export everything.
+   - **Favorites Only** — Export only favorited items.
+   - **Date Range** — Pick a start and end date.
+4. Click **Export...** to open a save dialog and choose where to save the file.
 
 ### Model Management
 
@@ -103,6 +141,7 @@ Open settings from the menu bar dropdown or via the gear icon.
 
 **Transcription tab:**
 - **Language** — Choose from 98+ languages or leave on Auto-detect to let the model identify the language.
+- **Translate to English** — When enabled, speech in any language is translated to English using whisper.cpp's built-in translation.
 - **Model** — View the currently loaded model, download new models, or switch between downloaded models.
 
 **Hotkey tab:**

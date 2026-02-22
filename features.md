@@ -9,8 +9,11 @@ On-device speech-to-text powered by [whisper.cpp](https://github.com/ggerganov/w
 | On-device transcription (whisper.cpp) | Yes | Yes |
 | Metal GPU acceleration | Yes | Yes |
 | 98+ languages | Yes | Yes |
+| Translate any language to English | Yes | Yes |
 | Model download & management | Yes | Yes |
 | Transcription history | Yes | Yes |
+| History export (Plain Text, JSON, CSV) | Yes | Yes |
+| Audio file import (wav, mp3, m4a, etc.) | Yes | - |
 | Copy to clipboard | Yes | Yes |
 | Share transcription (native share sheet) | Yes | Yes |
 | Rename transcription (custom title) | Yes | Yes |
@@ -36,13 +39,16 @@ WhisperFlow lives in the menu bar and works system-wide.
 - **Clipboard integration** — Transcription automatically copied to clipboard
 - **Streaming preview** — Real-time partial transcription as you speak (3-second chunks)
 - **Sound feedback** — Tink/Pop sounds on start/stop (configurable)
+- **Translation mode** — Translate speech in any language to English using whisper.cpp's built-in translation. Toggle in menu bar, launcher, or Settings
+- **Audio file import** — Transcribe audio/video files (wav, mp3, m4a, aac, flac, mp4, mov, caf, aiff) via file picker. Max 30 minutes. Source file name tracked in history
 
 ### User Interface
 - **Menu bar extra** — Compact window with status, last transcription, and quick actions
-- **Command palette launcher** — Spotlight-style panel (Cmd+Shift+W) for quick actions and transcription search with keyboard navigation
+- **Command palette launcher** — Spotlight-style panel (Cmd+Shift+W) for quick actions and transcription search with keyboard navigation. Includes: Start/Stop/Cancel Recording, Import Audio File, Toggle Translation, Export History, Open Settings, Open History
 - **Floating overlay HUD** — Recording/transcribing indicator positioned at top of screen
 - **Optional Dock icon** — Toggle "Show in Dock" in Settings; clicking the Dock icon opens the launcher
-- **Transcription history** — Searchable list with favorites, source app tracking, detail view, custom titles (rename), and native sharing
+- **Transcription history** — Searchable list with favorites, source app tracking, detail view, custom titles (rename), native sharing, and export
+- **History export** — Export transcriptions as Plain Text, JSON, or CSV. Choose scope: All, Favorites Only, or Date Range. Via toolbar button or launcher command
 - **Settings panel** — General, Transcription, Hotkey, and About tabs
 
 ### Model Management
@@ -53,7 +59,9 @@ WhisperFlow lives in the menu bar and works system-wide.
 ### System Integration
 - Launch at login (via ServiceManagement)
 - Accessibility permission for text injection (CGEvent keystrokes + clipboard paste)
-- Hardened runtime with required entitlements
+- Hardened runtime with sandbox entitlements (audio input, user-selected files read-only, network client)
+- Privacy manifest (`PrivacyInfo.xcprivacy`) — no tracking, no data collection, required-reason API declarations
+- Document type declarations for audio file import UTTypes
 - **Shortcuts.app integration** — Three AppIntents: Toggle Recording, Get Last Transcription, Search Transcriptions
 - **Siri support** — Voice phrases to trigger recording or retrieve transcriptions
 
@@ -105,12 +113,14 @@ WhisperFlow for iOS provides a standalone recording app and a custom keyboard ex
 Both platforms share a common library:
 
 - **AudioCaptureEngine** — AVFoundation-based 16kHz mono capture with format conversion
-- **WhisperContext** — whisper.cpp C API wrapper with async inference
+- **AudioFileLoader** — Load audio/video files (wav, mp3, m4a, aac, flac, mp4, mov, caf, aiff) and convert to 16kHz mono Float32 samples via AVAudioFile + AVAudioConverter. 30-minute max duration guard
+- **WhisperContext** — whisper.cpp C API wrapper with async inference and built-in translation support
 - **StreamingTranscriber** — Chunked real-time transcription with overlap
 - **ModelCatalog** — 10 model definitions with platform-aware recommendations
 - **ModelManager** — Download, load, delete with progress tracking (decoupled via `ModelLoadHandler` protocol)
 - **DataStore** — JSON-backed transcription history with search, favorites, rename, pagination
-- **TranscriptionRecord** — Data model (text, language, duration, model, source app, favorite, optional title with displayTitle computed property)
+- **TranscriptionRecord** — Data model (text, language, duration, model, source app, source file, favorite, optional title with displayTitle computed property)
+- **HistoryExporter** — Export transcription records as Plain Text, JSON, or CSV with proper quoting/escaping
 - **SharedContainer** — App Group UserDefaults + Darwin notification IPC
 
 ## Whisper Models

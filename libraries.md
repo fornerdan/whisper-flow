@@ -25,6 +25,7 @@ System frameworks — no separate license required.
 | SwiftUI | macOS, iOS | Declarative UI for all views (settings, onboarding, history, etc.) |
 | Combine | macOS, iOS | Reactive state management in view models |
 | AppKit | macOS | Native macOS window management (NSWindow, NSPanel, menu bar extra) |
+| UniformTypeIdentifiers | macOS | UTType file type identifiers for audio file import picker |
 | Carbon | macOS | Global hotkey registration via `HIToolbox` event APIs |
 | ServiceManagement | macOS | Launch at login functionality |
 | UIKit | iOS | iOS UI framework, keyboard extension (`UIInputViewController`) |
@@ -39,6 +40,7 @@ System frameworks — no separate license required.
 | libtool | Combines individual static libraries (`libwhisper.a`, `libggml*.a`) into a single combined archive per platform |
 | xcodebuild | Creates the multi-platform `whisper.xcframework` from per-platform static archives |
 | Swift Package Manager | Resolves SPM dependencies (KeyboardShortcuts) and supports building via `swift build` |
+| sips | macOS built-in image resizer used by `scripts/generate-icons.sh` to generate all App Store icon sizes from a 1024x1024 source |
 
 ## Model Hosting
 
