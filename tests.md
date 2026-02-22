@@ -1,6 +1,6 @@
 # WhisperFlow Tests
 
-**Total: 19 tests across 4 test files**
+**Total: 37 tests across 5 test files**
 
 > Tests require Xcode (not just Command Line Tools) to run via `xcodebuild test -scheme WhisperFlowTests -destination 'platform=macOS'`. SPM `swift test` does not work because XCTest is only available through the Xcode toolchain.
 
@@ -36,6 +36,29 @@
 | `testModelFilenames` | All model filenames match `ggml-*.bin` convention |
 | `testDownloadURLsAreValid` | All download URLs point to huggingface.co |
 
+### `Tests/WhisperFlowTests/TranscriptionRecordTests.swift` (18 tests)
+
+| Test | Description |
+|------|-------------|
+| `testTitleDefaultsToNil` | New records have `title` as nil by default |
+| `testTitleCanBeSetViaInit` | Title can be set through the initializer |
+| `testTitleIsMutable` | Title can be mutated after creation |
+| `testTitleCanBeClearedToNil` | Title can be set back to nil |
+| `testDisplayTitleReturnsTitleWhenSet` | `displayTitle` returns custom title when set |
+| `testDisplayTitleReturnsTextWhenNoTitle` | `displayTitle` falls back to text when no title |
+| `testDisplayTitleReturnsTextWhenTitleIsEmpty` | `displayTitle` falls back to text when title is empty string |
+| `testDisplayTitleReturnsFirstLineOnly` | `displayTitle` returns only the first line of multi-line text |
+| `testDisplayTitleHandlesCarriageReturn` | `displayTitle` handles `\r\n` line endings |
+| `testDisplayTitleTruncatesLongText` | `displayTitle` truncates text over 100 chars with "…" |
+| `testDisplayTitleDoesNotTruncateExactly100Chars` | `displayTitle` does not truncate text at exactly 100 chars |
+| `testDisplayTitlePrefersCustomTitleOverLongText` | Custom title takes precedence over long text |
+| `testDecodingWithoutTitleField` | Backward compatibility — JSON without `title` decodes with nil title |
+| `testDecodingWithTitleField` | JSON with `title` decodes correctly |
+| `testEncodingIncludesTitle` | Encoding includes title in JSON output |
+| `testRoundTripEncodingDecoding` | Encode → decode preserves all fields including title |
+| `testRenameRecordSetsTitle` | `DataStore.renameRecord` sets title, and clearing with empty string reverts to nil |
+| `testSearchMatchesTitle` | `DataStore.fetchRecords` search matches against both title and text |
+
 ### `Tests/WhisperFlowTests/TextInjectorTests.swift` (4 tests)
 
 | Test | Description |
@@ -50,4 +73,5 @@
 - **Audio Capture** — sample rate, channel count, initial state
 - **Transcription** — segment/result data types, error descriptions
 - **Model Management** — catalog contents, lookup, speed/quality ordering, file naming, download URLs
+- **Transcription Record** — title property, displayTitle logic (truncation, first line, fallback), Codable backward compatibility, rename via DataStore, title-aware search
 - **System Integration** — accessibility trust check, audio permissions, error types
