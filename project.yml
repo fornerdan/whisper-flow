@@ -1,0 +1,74 @@
+name: WhisperFlow
+options:
+  bundleIdPrefix: com.whisperflow
+  deploymentTarget:
+    macOS: "14.0"
+  xcodeVersion: "15.0"
+  generateEmptyDirectories: true
+
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    MACOSX_DEPLOYMENT_TARGET: "14.0"
+    ENABLE_HARDENED_RUNTIME: YES
+    CODE_SIGN_IDENTITY: "-"
+    PRODUCT_BUNDLE_IDENTIFIER: com.whisperflow.app
+
+packages:
+  KeyboardShortcuts:
+    url: https://github.com/sindresorhus/KeyboardShortcuts
+    from: "2.0.0"
+
+targets:
+  WhisperFlow:
+    type: application
+    platform: macOS
+    sources:
+      - Sources/WhisperFlow
+    resources:
+      - Resources
+    dependencies:
+      - target: WhisperBridge
+      - package: KeyboardShortcuts
+      - framework: Vendor/whisper.xcframework
+        embed: true
+    settings:
+      base:
+        INFOPLIST_FILE: Sources/WhisperFlow/Resources/Info.plist
+        CODE_SIGN_ENTITLEMENTS: Sources/WhisperFlow/Resources/WhisperFlow.entitlements
+        LD_RUNPATH_SEARCH_PATHS:
+          - "@executable_path/../Frameworks"
+        FRAMEWORK_SEARCH_PATHS:
+          - "$(PROJECT_DIR)/Vendor"
+        HEADER_SEARCH_PATHS:
+          - "$(PROJECT_DIR)/Vendor/whisper.xcframework/macos-arm64_x86_64/Headers"
+        OTHER_LDFLAGS:
+          - "-lc++"
+        ENABLE_HARDENED_RUNTIME: YES
+        LSUIElement: YES
+
+  WhisperBridge:
+    type: library.static
+    platform: macOS
+    sources:
+      - Sources/WhisperBridge
+    settings:
+      base:
+        HEADER_SEARCH_PATHS:
+          - "$(PROJECT_DIR)/Vendor/whisper.xcframework/macos-arm64_x86_64/Headers"
+        FRAMEWORK_SEARCH_PATHS:
+          - "$(PROJECT_DIR)/Vendor"
+    dependencies:
+      - framework: Vendor/whisper.xcframework
+        embed: false
+      - sdk: Accelerate.framework
+      - sdk: CoreML.framework
+      - sdk: Metal.framework
+
+  WhisperFlowTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - Tests/WhisperFlowTests
+    dependencies:
+      - target: WhisperFlow

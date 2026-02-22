@@ -1,0 +1,4 @@
+module WhisperBridge {
+    header "whisper_bridge.h"
+    export *
+}
