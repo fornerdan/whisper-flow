@@ -34,10 +34,12 @@ WhisperFlow also supports **streaming preview** — partial transcription result
 
 Open history from the menu bar dropdown by clicking **History** (or the clock icon).
 
-- **Search** — Use the search bar at the top to filter transcriptions by text content.
+- **Search** — Use the search bar at the top to filter transcriptions by text content or custom title.
 - **Favorites** — Click the star toggle to show only favorited items. Right-click any transcription and choose **Favorite** to mark it.
-- **Detail View** — Click a transcription to see the full text, date, duration, language, model used, and source app.
-- **Copy** — Right-click a transcription and choose **Copy Text**, or use the Copy button in the toolbar of the detail view.
+- **Detail View** — Click a transcription to see the full text, custom title (if set), date, duration, language, model used, and source app.
+- **Copy** — Right-click a transcription and choose **Copy Text**, or use the Copy button in the detail view toolbar.
+- **Share** — Right-click and choose **Share…** to open the native share sheet, or use the Share button in the detail view toolbar.
+- **Rename** — Right-click and choose **Rename…** (or use the Rename button in the detail view toolbar) to give a transcription a custom title. The title appears in the list instead of the raw text. Leave the title empty to revert to showing the original text.
 - **Delete** — Right-click a transcription and choose **Delete**.
 
 ### Model Management
@@ -131,9 +133,13 @@ Go to the **Models** tab in the app.
 
 Go to the **History** tab to see all past transcriptions.
 
-- **Search** — Filter transcriptions by text content.
-- **Favorites** — Mark transcriptions as favorites for quick access.
-- **Copy** — Tap a transcription to view details and copy the text.
+- **Search** — Filter transcriptions by text content or custom title.
+- **Favorites** — Swipe right on a transcription to toggle favorite, or long-press and choose **Favorite**. Tap the star icon in the toolbar to show only favorites.
+- **Detail View** — Tap a transcription to see the full text, custom title (if set), date, duration, language, model used, and source app. The full text is selectable.
+- **Copy** — Swipe left to copy, or use the Copy button in the detail view toolbar, or long-press and choose **Copy Text**.
+- **Share** — Long-press and choose **Share…** to open the native share sheet, or use the Share button in the detail view toolbar.
+- **Rename** — Long-press and choose **Rename…** (or use the Rename button in the detail view toolbar) to give a transcription a custom title. The title appears in the list instead of the raw text. Leave the title empty to revert to showing the original text.
+- **Delete** — Swipe left to delete, or long-press and choose **Delete**.
 
 ### Settings
 

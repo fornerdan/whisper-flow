@@ -12,6 +12,9 @@ On-device speech-to-text powered by [whisper.cpp](https://github.com/ggerganov/w
 | Model download & management | Yes | Yes |
 | Transcription history | Yes | Yes |
 | Copy to clipboard | Yes | Yes |
+| Share transcription (native share sheet) | Yes | Yes |
+| Rename transcription (custom title) | Yes | Yes |
+| Full transcription detail view | Yes | Yes |
 | Offline operation | Yes | Yes |
 | Global hotkey (Cmd+Shift+Space) | Yes | - |
 | Auto-type into focused app | Yes | - |
@@ -35,7 +38,7 @@ WhisperFlow lives in the menu bar and works system-wide.
 ### User Interface
 - **Menu bar extra** — Compact window with status, last transcription, and quick actions
 - **Floating overlay HUD** — Recording/transcribing indicator positioned at top of screen
-- **Transcription history** — Searchable list with favorites, source app tracking, detail view
+- **Transcription history** — Searchable list with favorites, source app tracking, detail view, custom titles (rename), and native sharing
 - **Settings panel** — General, Transcription, Hotkey, and About tabs
 
 ### Model Management
@@ -100,8 +103,8 @@ Both platforms share a common library:
 - **StreamingTranscriber** — Chunked real-time transcription with overlap
 - **ModelCatalog** — 10 model definitions with platform-aware recommendations
 - **ModelManager** — Download, load, delete with progress tracking (decoupled via `ModelLoadHandler` protocol)
-- **DataStore** — JSON-backed transcription history with search, favorites, pagination
-- **TranscriptionRecord** — Data model (text, language, duration, model, source app, favorite)
+- **DataStore** — JSON-backed transcription history with search, favorites, rename, pagination
+- **TranscriptionRecord** — Data model (text, language, duration, model, source app, favorite, optional title with displayTitle computed property)
 - **SharedContainer** — App Group UserDefaults + Darwin notification IPC
 
 ## Whisper Models
