@@ -1,9 +1,8 @@
 import Foundation
-import AppKit
 
 @MainActor
-final class DataStore {
-    static let shared = DataStore()
+public final class DataStore {
+    public static let shared = DataStore()
 
     private let fileURL: URL
     private var records: [TranscriptionRecord] = []
@@ -53,15 +52,15 @@ final class DataStore {
 
     // MARK: - Save
 
-    func saveTranscription(
+    /// Save a transcription record. Pass sourceApp explicitly — on macOS, callers
+    /// can get this from NSWorkspace; on iOS, pass nil or the deep-link source.
+    public func saveTranscription(
         text: String,
         language: String,
         duration: TimeInterval,
-        modelUsed: String
+        modelUsed: String,
+        sourceApp: String? = nil
     ) async {
-        // Get the focused app name
-        let sourceApp = NSWorkspace.shared.frontmostApplication?.localizedName
-
         let record = TranscriptionRecord(
             text: text,
             language: language,
@@ -76,7 +75,7 @@ final class DataStore {
 
     // MARK: - Fetch
 
-    func fetchRecords(
+    public func fetchRecords(
         searchText: String = "",
         favoritesOnly: Bool = false,
         limit: Int? = nil
@@ -108,19 +107,19 @@ final class DataStore {
 
     // MARK: - Delete
 
-    func deleteRecord(_ record: TranscriptionRecord) throws {
+    public func deleteRecord(_ record: TranscriptionRecord) throws {
         records.removeAll { $0.id == record.id }
         saveToDisk()
     }
 
-    func deleteAllRecords() throws {
+    public func deleteAllRecords() throws {
         records.removeAll()
         saveToDisk()
     }
 
     // MARK: - Toggle Favorite
 
-    func toggleFavorite(_ record: TranscriptionRecord) throws {
+    public func toggleFavorite(_ record: TranscriptionRecord) throws {
         if let index = records.firstIndex(where: { $0.id == record.id }) {
             records[index].isFavorite.toggle()
             saveToDisk()

@@ -1,4 +1,5 @@
 import SwiftUI
+import WhisperCore
 
 struct HistoryView: View {
     @State private var searchText = ""

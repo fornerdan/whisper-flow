@@ -1,16 +1,31 @@
 import Foundation
 import Combine
 
-@MainActor
-final class ModelManager: NSObject, ObservableObject {
-    static let shared = ModelManager()
+/// Callback protocol for model loading — decouples ModelManager from TranscriptionEngine.
+/// Each platform implements this to wire up model loading to their specific engine.
+public protocol ModelLoadHandler: AnyObject {
+    func loadModel(at path: String) async throws
+}
 
-    @Published var downloadProgress: Double = 0
-    @Published var isDownloading: Bool = false
-    @Published var isModelLoaded: Bool = false
-    @Published var loadedModelName: String?
-    @Published var downloadedModels: Set<String> = []
-    @Published var downloadError: String?
+@MainActor
+public final class ModelManager: NSObject, ObservableObject {
+    public static let shared = ModelManager()
+
+    @Published public var downloadProgress: Double = 0
+    @Published public var isDownloading: Bool = false
+    @Published public var isModelLoaded: Bool = false
+    @Published public var loadedModelName: String?
+    @Published public var downloadedModels: Set<String> = []
+    @Published public var downloadError: String?
+
+    /// Set by the platform app to handle model loading into the transcription engine
+    public weak var loadHandler: ModelLoadHandler?
+
+    /// Key used for persisting selected model preference
+    public var selectedModelKey: String {
+        get { UserDefaults.standard.string(forKey: "selectedModel") ?? "tiny" }
+        set { UserDefaults.standard.set(newValue, forKey: "selectedModel") }
+    }
 
     private var activeDownloadTask: URLSessionDownloadTask?
     private var downloadContinuation: CheckedContinuation<URL, Error>?
@@ -20,7 +35,7 @@ final class ModelManager: NSObject, ObservableObject {
         return URLSession(configuration: config, delegate: self, delegateQueue: .main)
     }()
 
-    static var modelsDirectory: URL {
+    public static var modelsDirectory: URL {
         let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
         let modelsDir = appSupport.appendingPathComponent("WhisperFlow/Models", isDirectory: true)
         try? FileManager.default.createDirectory(at: modelsDir, withIntermediateDirectories: true)
@@ -34,7 +49,7 @@ final class ModelManager: NSObject, ObservableObject {
 
     // MARK: - Model Discovery
 
-    func scanDownloadedModels() {
+    public func scanDownloadedModels() {
         let fm = FileManager.default
         let dir = Self.modelsDirectory
         guard let files = try? fm.contentsOfDirectory(at: dir, includingPropertiesForKeys: nil) else { return }
@@ -47,11 +62,11 @@ final class ModelManager: NSObject, ObservableObject {
         )
     }
 
-    func isDownloaded(_ modelId: String) -> Bool {
+    public func isDownloaded(_ modelId: String) -> Bool {
         downloadedModels.contains(modelId)
     }
 
-    func modelPath(for modelId: String) -> URL? {
+    public func modelPath(for modelId: String) -> URL? {
         guard let model = ModelCatalog.model(for: modelId) else { return nil }
         let path = Self.modelsDirectory.appendingPathComponent(model.filename)
         return FileManager.default.fileExists(atPath: path.path) ? path : nil
@@ -59,7 +74,7 @@ final class ModelManager: NSObject, ObservableObject {
 
     // MARK: - Download
 
-    func downloadModel(_ model: WhisperModel) async throws {
+    public func downloadModel(_ model: WhisperModel) async throws {
         guard !isDownloading else { return }
 
         isDownloading = true
@@ -90,7 +105,7 @@ final class ModelManager: NSObject, ObservableObject {
         downloadProgress = 1.0
     }
 
-    func cancelDownload() {
+    public func cancelDownload() {
         activeDownloadTask?.cancel()
         activeDownloadTask = nil
         isDownloading = false
@@ -101,7 +116,7 @@ final class ModelManager: NSObject, ObservableObject {
 
     // MARK: - Delete
 
-    func deleteModel(_ modelId: String) throws {
+    public func deleteModel(_ modelId: String) throws {
         guard let model = ModelCatalog.model(for: modelId) else { return }
         let path = Self.modelsDirectory.appendingPathComponent(model.filename)
         try FileManager.default.removeItem(at: path)
@@ -116,19 +131,23 @@ final class ModelManager: NSObject, ObservableObject {
 
     // MARK: - Load
 
-    func loadModel(_ modelId: String) async throws {
+    public func loadModel(_ modelId: String) async throws {
         guard let path = modelPath(for: modelId) else {
             throw ModelError.modelNotFound(modelId)
         }
 
-        try await TranscriptionEngine.shared.loadModel(at: path.path)
+        guard let handler = loadHandler else {
+            throw ModelError.noLoadHandler
+        }
+
+        try await handler.loadModel(at: path.path)
         isModelLoaded = true
         loadedModelName = ModelCatalog.model(for: modelId)?.name
-        UserPreferences.shared.selectedModel = modelId
+        selectedModelKey = modelId
     }
 
-    func loadSelectedModel() async {
-        let selectedId = UserPreferences.shared.selectedModel
+    public func loadSelectedModel() async {
+        let selectedId = selectedModelKey
         print("[ModelManager] selectedModel preference: \(selectedId)")
         print("[ModelManager] downloaded models: \(downloadedModels)")
 
@@ -155,7 +174,7 @@ final class ModelManager: NSObject, ObservableObject {
     }
 
     /// Download and load the recommended model for first launch
-    func downloadAndLoadDefault() async throws {
+    public func downloadAndLoadDefault() async throws {
         let model = ModelCatalog.recommendedModel
         if !isDownloaded(model.id) {
             try await downloadModel(model)
@@ -167,7 +186,7 @@ final class ModelManager: NSObject, ObservableObject {
 // MARK: - URLSessionDownloadDelegate
 
 extension ModelManager: URLSessionDownloadDelegate {
-    nonisolated func urlSession(
+    nonisolated public func urlSession(
         _ session: URLSession,
         downloadTask: URLSessionDownloadTask,
         didFinishDownloadingTo location: URL
@@ -183,7 +202,7 @@ extension ModelManager: URLSessionDownloadDelegate {
         }
     }
 
-    nonisolated func urlSession(
+    nonisolated public func urlSession(
         _ session: URLSession,
         downloadTask: URLSessionDownloadTask,
         didWriteData bytesWritten: Int64,
@@ -199,7 +218,7 @@ extension ModelManager: URLSessionDownloadDelegate {
         }
     }
 
-    nonisolated func urlSession(
+    nonisolated public func urlSession(
         _ session: URLSession,
         task: URLSessionTask,
         didCompleteWithError error: Error?
@@ -214,13 +233,16 @@ extension ModelManager: URLSessionDownloadDelegate {
     }
 }
 
-enum ModelError: LocalizedError {
+public enum ModelError: LocalizedError {
     case modelNotFound(String)
+    case noLoadHandler
 
-    var errorDescription: String? {
+    public var errorDescription: String? {
         switch self {
         case .modelNotFound(let id):
             return "Model '\(id)' not found on disk"
+        case .noLoadHandler:
+            return "No model load handler configured. Set ModelManager.shared.loadHandler before loading models."
         }
     }
 }

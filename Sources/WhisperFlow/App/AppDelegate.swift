@@ -1,5 +1,6 @@
 import AppKit
 import SwiftUI
+import WhisperCore
 
 final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     static private(set) var shared: AppDelegate!

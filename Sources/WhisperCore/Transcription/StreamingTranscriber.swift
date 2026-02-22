@@ -4,7 +4,7 @@ import Foundation
 /// This is an optional enhancement over the batch transcription approach.
 /// Each chunk is transcribed independently, and the final pass uses the full audio
 /// for maximum accuracy.
-final class StreamingTranscriber {
+public final class StreamingTranscriber {
     private let whisperContext: WhisperContext
     private let chunkDuration: TimeInterval = 3.0 // seconds per chunk
     private let overlapDuration: TimeInterval = 0.5 // overlap between chunks
@@ -12,13 +12,13 @@ final class StreamingTranscriber {
     private var lastProcessedCount: Int = 0
     private var partialResults: [String] = []
 
-    var onPartialResult: ((String) -> Void)?
+    public var onPartialResult: ((String) -> Void)?
 
-    init(whisperContext: WhisperContext) {
+    public init(whisperContext: WhisperContext) {
         self.whisperContext = whisperContext
     }
 
-    func addSamples(_ samples: [Float]) {
+    public func addSamples(_ samples: [Float]) {
         accumulatedSamples.append(contentsOf: samples)
 
         let samplesPerChunk = Int(chunkDuration * AudioCaptureEngine.whisperSampleRate)
@@ -47,13 +47,13 @@ final class StreamingTranscriber {
         }
     }
 
-    func finalize() async throws -> String {
+    public func finalize() async throws -> String {
         // Run inference on full audio for best accuracy
         let result = try await whisperContext.transcribe(samples: accumulatedSamples)
         return result.text
     }
 
-    func reset() {
+    public func reset() {
         accumulatedSamples.removeAll()
         lastProcessedCount = 0
         partialResults.removeAll()

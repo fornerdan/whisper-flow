@@ -1,26 +1,39 @@
 import Foundation
 import WhisperBridge
 
-struct TranscriptionSegment {
-    let text: String
-    let startTime: TimeInterval
-    let endTime: TimeInterval
+public struct TranscriptionSegment {
+    public let text: String
+    public let startTime: TimeInterval
+    public let endTime: TimeInterval
+
+    public init(text: String, startTime: TimeInterval, endTime: TimeInterval) {
+        self.text = text
+        self.startTime = startTime
+        self.endTime = endTime
+    }
 }
 
-struct TranscriptionResult {
-    let text: String
-    let segments: [TranscriptionSegment]
-    let language: String
-    let duration: TimeInterval
+public struct TranscriptionResult {
+    public let text: String
+    public let segments: [TranscriptionSegment]
+    public let language: String
+    public let duration: TimeInterval
+
+    public init(text: String, segments: [TranscriptionSegment], language: String, duration: TimeInterval) {
+        self.text = text
+        self.segments = segments
+        self.language = language
+        self.duration = duration
+    }
 }
 
-final class WhisperContext {
+public final class WhisperContext {
     private var context: OpaquePointer?
     private let inferenceQueue = DispatchQueue(label: "com.whisperflow.inference", qos: .userInitiated)
 
-    var isLoaded: Bool { context != nil }
+    public var isLoaded: Bool { context != nil }
 
-    init(modelPath: String) throws {
+    public init(modelPath: String) throws {
         print("[WhisperContext] Loading model from: \(modelPath)")
         print("[WhisperContext] File exists: \(FileManager.default.fileExists(atPath: modelPath))")
 
@@ -41,7 +54,7 @@ final class WhisperContext {
         }
     }
 
-    func transcribe(
+    public func transcribe(
         samples: [Float],
         language: String? = nil,
         translate: Bool = false
@@ -87,15 +100,6 @@ final class WhisperContext {
         params.token_timestamps = true
 
         // Set language
-        let languageCString: UnsafePointer<CChar>?
-        var languageData: Data?
-        if let lang = language, lang != "auto" {
-            languageData = lang.data(using: .utf8)
-            languageCString = languageData?.withUnsafeBytes { $0.baseAddress?.assumingMemoryBound(to: CChar.self) }
-        } else {
-            languageCString = nil
-        }
-        // Language param requires careful handling - use a stable pointer
         let langPtr: UnsafeMutablePointer<CChar>?
         if let lang = language, lang != "auto" {
             langPtr = strdup(lang)
@@ -158,7 +162,7 @@ final class WhisperContext {
         )
     }
 
-    static func systemInfo() -> String {
+    public static func systemInfo() -> String {
         if let info = whisper_bridge_system_info() {
             return String(cString: info)
         }
@@ -166,12 +170,12 @@ final class WhisperContext {
     }
 }
 
-enum WhisperError: LocalizedError {
+public enum WhisperError: LocalizedError {
     case modelLoadFailed(String)
     case contextNotInitialized
     case inferenceFailed(code: Int)
 
-    var errorDescription: String? {
+    public var errorDescription: String? {
         switch self {
         case .modelLoadFailed(let path):
             return "Failed to load whisper model at: \(path)"

@@ -1,4 +1,5 @@
 import SwiftUI
+import WhisperCore
 
 @main
 struct WhisperFlowApp: App {

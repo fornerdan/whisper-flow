@@ -3,6 +3,7 @@ options:
   bundleIdPrefix: com.whisperflow
   deploymentTarget:
     macOS: "14.0"
+    iOS: "16.0"
   xcodeVersion: "15.0"
   generateEmptyDirectories: true
 
@@ -10,6 +11,7 @@ settings:
   base:
     SWIFT_VERSION: "5.9"
     MACOSX_DEPLOYMENT_TARGET: "14.0"
+    IPHONEOS_DEPLOYMENT_TARGET: "16.0"
     ENABLE_HARDENED_RUNTIME: YES
     CODE_SIGN_IDENTITY: "-"
     PRODUCT_BUNDLE_IDENTIFIER: com.whisperflow.app
@@ -20,6 +22,47 @@ packages:
     from: "2.0.0"
 
 targets:
+  # ============================================
+  # Shared library (macOS + iOS)
+  # ============================================
+  WhisperCore:
+    type: library.static
+    platform: [macOS, iOS]
+    sources:
+      - Sources/WhisperCore
+    dependencies:
+      - target: WhisperBridge
+    settings:
+      base:
+        HEADER_SEARCH_PATHS:
+          - "$(PROJECT_DIR)/Vendor/whisper.xcframework/macos-arm64_x86_64/Headers"
+        FRAMEWORK_SEARCH_PATHS:
+          - "$(PROJECT_DIR)/Vendor"
+
+  # ============================================
+  # C bridge (macOS + iOS)
+  # ============================================
+  WhisperBridge:
+    type: library.static
+    platform: [macOS, iOS]
+    sources:
+      - Sources/WhisperBridge
+    settings:
+      base:
+        HEADER_SEARCH_PATHS:
+          - "$(PROJECT_DIR)/Vendor/whisper.xcframework/macos-arm64_x86_64/Headers"
+        FRAMEWORK_SEARCH_PATHS:
+          - "$(PROJECT_DIR)/Vendor"
+    dependencies:
+      - framework: Vendor/whisper.xcframework
+        embed: false
+      - sdk: Accelerate.framework
+      - sdk: CoreML.framework
+      - sdk: Metal.framework
+
+  # ============================================
+  # macOS app
+  # ============================================
   WhisperFlow:
     type: application
     platform: macOS
@@ -28,6 +71,7 @@ targets:
     resources:
       - Resources
     dependencies:
+      - target: WhisperCore
       - target: WhisperBridge
       - package: KeyboardShortcuts
       - framework: Vendor/whisper.xcframework
@@ -47,24 +91,54 @@ targets:
         ENABLE_HARDENED_RUNTIME: YES
         LSUIElement: YES
 
-  WhisperBridge:
-    type: library.static
-    platform: macOS
+  # ============================================
+  # iOS host app
+  # ============================================
+  WhisperFlowiOS:
+    type: application
+    platform: iOS
     sources:
-      - Sources/WhisperBridge
+      - Sources/WhisperFlowiOS
+    dependencies:
+      - target: WhisperCore
+      - target: WhisperBridge
+      - framework: Vendor/whisper.xcframework
+        embed: true
     settings:
       base:
-        HEADER_SEARCH_PATHS:
-          - "$(PROJECT_DIR)/Vendor/whisper.xcframework/macos-arm64_x86_64/Headers"
+        PRODUCT_BUNDLE_IDENTIFIER: com.whisperflow.ios
+        INFOPLIST_FILE: Sources/WhisperFlowiOS/Resources/Info.plist
+        CODE_SIGN_ENTITLEMENTS: Sources/WhisperFlowiOS/Resources/WhisperFlowiOS.entitlements
+        LD_RUNPATH_SEARCH_PATHS:
+          - "@executable_path/Frameworks"
         FRAMEWORK_SEARCH_PATHS:
           - "$(PROJECT_DIR)/Vendor"
-    dependencies:
-      - framework: Vendor/whisper.xcframework
-        embed: false
-      - sdk: Accelerate.framework
-      - sdk: CoreML.framework
-      - sdk: Metal.framework
+        OTHER_LDFLAGS:
+          - "-lc++"
+        TARGETED_DEVICE_FAMILY: "1,2"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
 
+  # ============================================
+  # iOS keyboard extension
+  # ============================================
+  WhisperKeyboard:
+    type: app-extension
+    platform: iOS
+    sources:
+      - Sources/WhisperKeyboard
+    dependencies:
+      - target: WhisperCore
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.whisperflow.ios.keyboard
+        INFOPLIST_FILE: Sources/WhisperKeyboard/Resources/Info.plist
+        CODE_SIGN_ENTITLEMENTS: Sources/WhisperKeyboard/Resources/WhisperKeyboard.entitlements
+        TARGETED_DEVICE_FAMILY: "1,2"
+        SKIP_INSTALL: YES
+
+  # ============================================
+  # Tests
+  # ============================================
   WhisperFlowTests:
     type: bundle.unit-test
     platform: macOS

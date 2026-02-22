@@ -1,4 +1,5 @@
 import SwiftUI
+import WhisperCore
 
 struct ModelDownloadView: View {
     @EnvironmentObject var modelManager: ModelManager

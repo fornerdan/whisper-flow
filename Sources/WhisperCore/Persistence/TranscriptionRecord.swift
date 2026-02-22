@@ -1,16 +1,16 @@
 import Foundation
 
-final class TranscriptionRecord: Codable, Identifiable, Equatable, Hashable {
-    let id: UUID
-    var text: String
-    var language: String
-    var duration: TimeInterval
-    var modelUsed: String
-    var createdAt: Date
-    var isFavorite: Bool
-    var sourceApp: String?
+public final class TranscriptionRecord: Codable, Identifiable, Equatable, Hashable {
+    public let id: UUID
+    public var text: String
+    public var language: String
+    public var duration: TimeInterval
+    public var modelUsed: String
+    public var createdAt: Date
+    public var isFavorite: Bool
+    public var sourceApp: String?
 
-    init(
+    public init(
         id: UUID = UUID(),
         text: String,
         language: String,
@@ -30,11 +30,11 @@ final class TranscriptionRecord: Codable, Identifiable, Equatable, Hashable {
         self.sourceApp = sourceApp
     }
 
-    static func == (lhs: TranscriptionRecord, rhs: TranscriptionRecord) -> Bool {
+    public static func == (lhs: TranscriptionRecord, rhs: TranscriptionRecord) -> Bool {
         lhs.id == rhs.id
     }
 
-    func hash(into hasher: inout Hasher) {
+    public func hash(into hasher: inout Hasher) {
         hasher.combine(id)
     }
 }

@@ -1,15 +1,15 @@
 import AVFoundation
 import Combine
 
-enum AudioCaptureState {
+public enum AudioCaptureState {
     case idle
     case recording
     case error(String)
 }
 
-final class AudioCaptureEngine: ObservableObject {
-    @Published private(set) var state: AudioCaptureState = .idle
-    @Published private(set) var audioLevel: Float = 0
+public final class AudioCaptureEngine: ObservableObject {
+    @Published public private(set) var state: AudioCaptureState = .idle
+    @Published public private(set) var audioLevel: Float = 0
 
     private let audioEngine = AVAudioEngine()
     private var audioConverter: AVAudioConverter?
@@ -17,8 +17,8 @@ final class AudioCaptureEngine: ObservableObject {
     private let bufferLock = NSLock()
 
     // Whisper expects 16kHz mono Float32
-    static let whisperSampleRate: Double = 16000
-    static let whisperChannels: AVAudioChannelCount = 1
+    public static let whisperSampleRate: Double = 16000
+    public static let whisperChannels: AVAudioChannelCount = 1
 
     private lazy var whisperFormat: AVAudioFormat = {
         AVAudioFormat(
@@ -29,7 +29,9 @@ final class AudioCaptureEngine: ObservableObject {
         )!
     }()
 
-    func startRecording() throws {
+    public init() {}
+
+    public func startRecording() throws {
         if case .recording = state { return }
 
         pcmBuffer.removeAll()
@@ -61,7 +63,7 @@ final class AudioCaptureEngine: ObservableObject {
         }
     }
 
-    func stopRecording() -> [Float] {
+    public func stopRecording() -> [Float] {
         audioEngine.inputNode.removeTap(onBus: 0)
         audioEngine.stop()
         audioConverter = nil
@@ -124,12 +126,12 @@ final class AudioCaptureEngine: ObservableObject {
     }
 }
 
-enum AudioCaptureError: LocalizedError {
+public enum AudioCaptureError: LocalizedError {
     case noInputDevice
     case converterCreationFailed
     case engineStartFailed(String)
 
-    var errorDescription: String? {
+    public var errorDescription: String? {
         switch self {
         case .noInputDevice:
             return "No microphone found. Please connect a microphone and try again."

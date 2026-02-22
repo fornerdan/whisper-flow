@@ -1,9 +1,9 @@
 import Foundation
 import Combine
-import AppKit
+import AVFoundation
 import WhisperCore
 
-enum TranscriptionState: Equatable {
+public enum iOSTranscriptionState: Equatable {
     case idle
     case loading
     case recording
@@ -11,7 +11,7 @@ enum TranscriptionState: Equatable {
     case done(String)
     case error(String)
 
-    static func == (lhs: TranscriptionState, rhs: TranscriptionState) -> Bool {
+    public static func == (lhs: iOSTranscriptionState, rhs: iOSTranscriptionState) -> Bool {
         switch (lhs, rhs) {
         case (.idle, .idle), (.loading, .loading), (.recording, .recording), (.transcribing, .transcribing):
             return true
@@ -26,22 +26,24 @@ enum TranscriptionState: Equatable {
 }
 
 @MainActor
-final class TranscriptionEngine: ObservableObject, ModelLoadHandler {
-    static let shared = TranscriptionEngine()
+public final class iOSTranscriptionEngine: ObservableObject, ModelLoadHandler {
+    public static let shared = iOSTranscriptionEngine()
 
-    @Published var state: TranscriptionState = .idle {
-        didSet {
-            NotificationCenter.default.post(name: .recordingStateDidChange, object: nil)
-        }
-    }
-    @Published var currentText: String = ""
-    @Published var audioLevel: Float = 0
+    @Published public var state: iOSTranscriptionState = .idle
+    @Published public var currentText: String = ""
+    @Published public var audioLevel: Float = 0
+    @Published public var hasCompletedOnboarding: Bool
 
     private let audioCaptureEngine = AudioCaptureEngine()
     private var whisperContext: WhisperContext?
     private var audioCancellable: AnyCancellable?
 
+    /// Whether we were launched from the keyboard and should auto-return after transcription
+    public var launchedFromKeyboard = false
+
     private init() {
+        hasCompletedOnboarding = UserDefaults.standard.bool(forKey: "hasCompletedOnboarding")
+
         // Forward audio level from capture engine
         audioCancellable = audioCaptureEngine.$audioLevel
             .receive(on: RunLoop.main)
@@ -51,15 +53,20 @@ final class TranscriptionEngine: ObservableObject, ModelLoadHandler {
 
         // Register as model load handler
         ModelManager.shared.loadHandler = self
+
+        // Load model on startup
+        Task {
+            await ModelManager.shared.loadSelectedModel()
+        }
     }
 
-    var isModelLoaded: Bool {
+    public var isModelLoaded: Bool {
         whisperContext?.isLoaded ?? false
     }
 
     // MARK: - ModelLoadHandler
 
-    func loadModel(at path: String) async throws {
+    public func loadModel(at path: String) async throws {
         state = .loading
         do {
             whisperContext = try WhisperContext(modelPath: path)
@@ -70,27 +77,20 @@ final class TranscriptionEngine: ObservableObject, ModelLoadHandler {
         }
     }
 
-    func toggleRecording() {
-        switch state {
-        case .recording:
-            stopRecordingAndTranscribe()
-        case .idle, .done, .error:
-            startRecording()
-        default:
-            break
-        }
-    }
+    // MARK: - Recording
 
-    func startRecording() {
+    public func startRecording() {
         guard whisperContext != nil else {
             state = .error("No model loaded. Please download a model first.")
             return
         }
 
         do {
-            if UserPreferences.shared.playSound {
-                NSSound(named: "Tink")?.play()
-            }
+            // Configure audio session for recording
+            let session = AVAudioSession.sharedInstance()
+            try session.setCategory(.record, mode: .default)
+            try session.setActive(true)
+
             try audioCaptureEngine.startRecording()
             state = .recording
         } catch {
@@ -98,7 +98,7 @@ final class TranscriptionEngine: ObservableObject, ModelLoadHandler {
         }
     }
 
-    func stopRecordingAndTranscribe() {
+    public func stopRecordingAndTranscribe() {
         let samples = audioCaptureEngine.stopRecording()
 
         guard !samples.isEmpty else {
@@ -106,16 +106,12 @@ final class TranscriptionEngine: ObservableObject, ModelLoadHandler {
             return
         }
 
-        if UserPreferences.shared.playSound {
-            NSSound(named: "Pop")?.play()
-        }
-
         state = .transcribing
 
         Task {
             do {
-                let prefs = UserPreferences.shared
-                let language = prefs.language == "auto" ? nil : prefs.language
+                let language = UserDefaults.standard.string(forKey: "language") ?? "auto"
+                let lang = language == "auto" ? nil : language
 
                 guard let context = whisperContext else {
                     state = .error("No model loaded")
@@ -124,45 +120,46 @@ final class TranscriptionEngine: ObservableObject, ModelLoadHandler {
 
                 let result = try await context.transcribe(
                     samples: samples,
-                    language: language
+                    language: lang
                 )
 
                 let text = result.text
                 currentText = text
                 state = .done(text)
 
-                // Get source app name from NSWorkspace (macOS-specific)
-                let sourceApp = NSWorkspace.shared.frontmostApplication?.localizedName
-
                 // Save to history
                 await DataStore.shared.saveTranscription(
                     text: text,
                     language: result.language,
                     duration: result.duration,
-                    modelUsed: ModelManager.shared.selectedModelKey,
-                    sourceApp: sourceApp
+                    modelUsed: ModelManager.shared.selectedModelKey
                 )
 
-                // Copy to clipboard if enabled
-                if prefs.copyToClipboard {
-                    NSPasteboard.general.clearContents()
-                    NSPasteboard.general.setString(text, forType: .string)
+                // Write to shared container for keyboard extension
+                if launchedFromKeyboard {
+                    SharedContainer.shared.writeTranscription(text)
                 }
 
-                // Inject text if enabled
-                if prefs.autoInjectText && !text.isEmpty {
-                    try await Task.sleep(for: .milliseconds(100))
-                    TextInjector.type(text)
-                }
+                // Copy to clipboard
+                UIPasteboard.general.string = text
 
             } catch {
                 state = .error("Transcription failed: \(error.localizedDescription)")
             }
+
+            // Deactivate audio session
+            try? AVAudioSession.sharedInstance().setActive(false)
         }
     }
 
-    func cancelRecording() {
+    public func cancelRecording() {
         _ = audioCaptureEngine.stopRecording()
         state = .idle
+        try? AVAudioSession.sharedInstance().setActive(false)
+    }
+
+    public func completeOnboarding() {
+        hasCompletedOnboarding = true
+        UserDefaults.standard.set(true, forKey: "hasCompletedOnboarding")
     }
 }

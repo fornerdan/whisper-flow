@@ -1,39 +1,55 @@
 import Foundation
 
-struct WhisperModel: Identifiable, Codable, Equatable {
-    let id: String          // e.g., "base", "small", "medium"
-    let name: String        // e.g., "Base", "Small", "Medium"
-    let size: String        // e.g., "142 MB"
-    let sizeBytes: Int64
-    let ramRequired: String // e.g., "~388 MB"
-    let speed: ModelSpeed
-    let quality: ModelQuality
-    let downloadURL: URL
-    let filename: String    // e.g., "ggml-base.bin"
+public struct WhisperModel: Identifiable, Codable, Equatable {
+    public let id: String          // e.g., "base", "small", "medium"
+    public let name: String        // e.g., "Base", "Small", "Medium"
+    public let size: String        // e.g., "142 MB"
+    public let sizeBytes: Int64
+    public let ramRequired: String // e.g., "~388 MB"
+    public let speed: ModelSpeed
+    public let quality: ModelQuality
+    public let downloadURL: URL
+    public let filename: String    // e.g., "ggml-base.bin"
 
-    enum ModelSpeed: String, Codable, Comparable {
+    public init(
+        id: String, name: String, size: String, sizeBytes: Int64,
+        ramRequired: String, speed: ModelSpeed, quality: ModelQuality,
+        downloadURL: URL, filename: String
+    ) {
+        self.id = id
+        self.name = name
+        self.size = size
+        self.sizeBytes = sizeBytes
+        self.ramRequired = ramRequired
+        self.speed = speed
+        self.quality = quality
+        self.downloadURL = downloadURL
+        self.filename = filename
+    }
+
+    public enum ModelSpeed: String, Codable, Comparable {
         case fastest, fast, medium, slow, slowest
 
-        static func < (lhs: ModelSpeed, rhs: ModelSpeed) -> Bool {
+        public static func < (lhs: ModelSpeed, rhs: ModelSpeed) -> Bool {
             let order: [ModelSpeed] = [.fastest, .fast, .medium, .slow, .slowest]
             return order.firstIndex(of: lhs)! < order.firstIndex(of: rhs)!
         }
     }
 
-    enum ModelQuality: String, Codable, Comparable {
+    public enum ModelQuality: String, Codable, Comparable {
         case basic, good, great, excellent, best
 
-        static func < (lhs: ModelQuality, rhs: ModelQuality) -> Bool {
+        public static func < (lhs: ModelQuality, rhs: ModelQuality) -> Bool {
             let order: [ModelQuality] = [.basic, .good, .great, .excellent, .best]
             return order.firstIndex(of: lhs)! < order.firstIndex(of: rhs)!
         }
     }
 }
 
-enum ModelCatalog {
+public enum ModelCatalog {
     private static let baseURL = "https://huggingface.co/ggerganov/whisper.cpp/resolve/main"
 
-    static let models: [WhisperModel] = [
+    public static let models: [WhisperModel] = [
         WhisperModel(
             id: "tiny",
             name: "Tiny",
@@ -147,11 +163,26 @@ enum ModelCatalog {
         )
     ]
 
-    static func model(for id: String) -> WhisperModel? {
+    public static func model(for id: String) -> WhisperModel? {
         models.first { $0.id == id }
     }
 
-    static var recommendedModel: WhisperModel {
+    public static var recommendedModel: WhisperModel {
+        #if os(iOS)
+        model(for: "tiny")!
+        #else
         model(for: "base")!
+        #endif
+    }
+
+    /// Models recommended for iOS (small enough to fit in iPhone RAM)
+    public static var iOSRecommendedModels: [WhisperModel] {
+        models.filter { $0.sizeBytes <= 500_000_000 } // Up to ~500MB
+    }
+
+    /// Whether a model is safe for iOS use (won't exhaust memory)
+    public static func isSafeForIOS(_ modelId: String) -> Bool {
+        guard let model = model(for: modelId) else { return false }
+        return model.sizeBytes <= 500_000_000
     }
 }

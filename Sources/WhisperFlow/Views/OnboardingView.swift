@@ -1,4 +1,5 @@
 import SwiftUI
+import WhisperCore
 
 struct OnboardingView: View {
     @EnvironmentObject var modelManager: ModelManager

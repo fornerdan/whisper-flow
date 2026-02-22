@@ -1,4 +1,5 @@
 import SwiftUI
+import WhisperCore
 
 struct SettingsView: View {
     @EnvironmentObject var engine: TranscriptionEngine

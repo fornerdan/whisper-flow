@@ -1,5 +1,6 @@
 import SwiftUI
 import AVFoundation
+import WhisperCore
 
 struct MenuBarView: View {
     @EnvironmentObject var engine: TranscriptionEngine
