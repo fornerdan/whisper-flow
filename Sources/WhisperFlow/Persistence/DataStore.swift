@@ -1,24 +1,53 @@
 import Foundation
-import SwiftData
 import AppKit
 
 @MainActor
 final class DataStore {
     static let shared = DataStore()
 
-    let container: ModelContainer
+    private let fileURL: URL
+    private var records: [TranscriptionRecord] = []
 
     private init() {
+        let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+        let whisperFlowDir = appSupport.appendingPathComponent("WhisperFlow", isDirectory: true)
+
+        // Create directory if needed
+        try? FileManager.default.createDirectory(at: whisperFlowDir, withIntermediateDirectories: true)
+
+        fileURL = whisperFlowDir.appendingPathComponent("history.json")
+
+        // Load existing records
+        loadFromDisk()
+    }
+
+    // MARK: - Persistence
+
+    private func loadFromDisk() {
+        guard FileManager.default.fileExists(atPath: fileURL.path) else {
+            records = []
+            return
+        }
         do {
-            let schema = Schema([TranscriptionRecord.self])
-            let config = ModelConfiguration(
-                "WhisperFlow",
-                schema: schema,
-                isStoredInMemoryOnly: false
-            )
-            container = try ModelContainer(for: schema, configurations: config)
+            let data = try Data(contentsOf: fileURL)
+            let decoder = JSONDecoder()
+            decoder.dateDecodingStrategy = .iso8601
+            records = try decoder.decode([TranscriptionRecord].self, from: data)
         } catch {
-            fatalError("Failed to create SwiftData container: \(error)")
+            print("Failed to load transcription history: \(error)")
+            records = []
+        }
+    }
+
+    private func saveToDisk() {
+        do {
+            let encoder = JSONEncoder()
+            encoder.dateEncodingStrategy = .iso8601
+            encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+            let data = try encoder.encode(records)
+            try data.write(to: fileURL, options: .atomic)
+        } catch {
+            print("Failed to save transcription history: \(error)")
         }
     }
 
@@ -41,13 +70,8 @@ final class DataStore {
             sourceApp: sourceApp
         )
 
-        container.mainContext.insert(record)
-
-        do {
-            try container.mainContext.save()
-        } catch {
-            print("Failed to save transcription: \(error)")
-        }
+        records.insert(record, at: 0)
+        saveToDisk()
     }
 
     // MARK: - Fetch
@@ -57,54 +81,49 @@ final class DataStore {
         favoritesOnly: Bool = false,
         limit: Int? = nil
     ) throws -> [TranscriptionRecord] {
-        var descriptor = FetchDescriptor<TranscriptionRecord>(
-            sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
-        )
+        var result = records
 
-        if let limit {
-            descriptor.fetchLimit = limit
-        }
+        // Sort by date descending (most recent first)
+        result.sort { $0.createdAt > $1.createdAt }
 
-        var predicates: [Predicate<TranscriptionRecord>] = []
-
+        // Filter by favorites
         if favoritesOnly {
-            predicates.append(#Predicate { $0.isFavorite })
+            result = result.filter { $0.isFavorite }
         }
 
+        // Filter by search text
         if !searchText.isEmpty {
-            predicates.append(#Predicate { record in
-                record.text.localizedStandardContains(searchText)
-            })
-        }
-
-        if predicates.count == 1 {
-            descriptor.predicate = predicates[0]
-        } else if predicates.count == 2 {
-            let search = searchText
-            descriptor.predicate = #Predicate { record in
-                record.isFavorite && record.text.localizedStandardContains(search)
+            result = result.filter {
+                $0.text.localizedCaseInsensitiveContains(searchText)
             }
         }
 
-        return try container.mainContext.fetch(descriptor)
+        // Apply limit
+        if let limit {
+            result = Array(result.prefix(limit))
+        }
+
+        return result
     }
 
     // MARK: - Delete
 
     func deleteRecord(_ record: TranscriptionRecord) throws {
-        container.mainContext.delete(record)
-        try container.mainContext.save()
+        records.removeAll { $0.id == record.id }
+        saveToDisk()
     }
 
     func deleteAllRecords() throws {
-        try container.mainContext.delete(model: TranscriptionRecord.self)
-        try container.mainContext.save()
+        records.removeAll()
+        saveToDisk()
     }
 
     // MARK: - Toggle Favorite
 
     func toggleFavorite(_ record: TranscriptionRecord) throws {
-        record.isFavorite.toggle()
-        try container.mainContext.save()
+        if let index = records.firstIndex(where: { $0.id == record.id }) {
+            records[index].isFavorite.toggle()
+            saveToDisk()
+        }
     }
 }

@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct OverlayHUD: View {
-    @StateObject private var engine = TranscriptionEngine.shared
+    @ObservedObject private var engine = TranscriptionEngine.shared
 
     var body: some View {
         HStack(spacing: 8) {

@@ -129,11 +129,27 @@ final class ModelManager: NSObject, ObservableObject {
 
     func loadSelectedModel() async {
         let selectedId = UserPreferences.shared.selectedModel
-        guard isDownloaded(selectedId) else { return }
+        print("[ModelManager] selectedModel preference: \(selectedId)")
+        print("[ModelManager] downloaded models: \(downloadedModels)")
+
+        // Try the selected model first, then fall back to any downloaded model
+        let modelToLoad: String
+        if isDownloaded(selectedId) {
+            modelToLoad = selectedId
+        } else if let firstAvailable = downloadedModels.first {
+            print("[ModelManager] Selected model '\(selectedId)' not found, falling back to '\(firstAvailable)'")
+            modelToLoad = firstAvailable
+        } else {
+            print("[ModelManager] No models available on disk")
+            return
+        }
 
         do {
-            try await loadModel(selectedId)
+            print("[ModelManager] Loading model '\(modelToLoad)' from: \(modelPath(for: modelToLoad)?.path ?? "nil")")
+            try await loadModel(modelToLoad)
+            print("[ModelManager] Model loaded successfully. isModelLoaded=\(isModelLoaded)")
         } catch {
+            print("[ModelManager] Failed to load model: \(error)")
             downloadError = "Failed to load model: \(error.localizedDescription)"
         }
     }

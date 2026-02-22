@@ -1,5 +1,4 @@
 import SwiftUI
-import KeyboardShortcuts
 
 struct SettingsView: View {
     @EnvironmentObject var engine: TranscriptionEngine
@@ -111,12 +110,23 @@ struct HotkeySettingsTab: View {
                 HStack {
                     Text("Toggle Recording:")
                     Spacer()
-                    KeyboardShortcuts.Recorder("", name: .toggleRecording)
+                    Text(UserPreferences.shared.hotkeyDisplayString)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(
+                            RoundedRectangle(cornerRadius: 6)
+                                .fill(Color.secondary.opacity(0.15))
+                        )
+                        .font(.system(.body, design: .rounded, weight: .medium))
                 }
 
                 Text("Press this keyboard shortcut anywhere to start/stop recording. The transcribed text will be typed into whatever app is focused.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
+
+                Text("To customize the hotkey, a future update will add a recorder. The default is Cmd+Shift+Space.")
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
             }
         }
         .formStyle(.grouped)
@@ -151,8 +161,6 @@ struct AboutTab: View {
                 Text("Acknowledgments")
                     .font(.headline)
                 Text("whisper.cpp by Georgi Gerganov (MIT License)")
-                    .font(.caption)
-                Text("KeyboardShortcuts by Sindre Sorhus (MIT License)")
                     .font(.caption)
             }
 

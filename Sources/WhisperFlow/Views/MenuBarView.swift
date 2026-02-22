@@ -3,6 +3,9 @@ import SwiftUI
 struct MenuBarView: View {
     @EnvironmentObject var engine: TranscriptionEngine
     @EnvironmentObject var modelManager: ModelManager
+    private var appDelegate: AppDelegate? {
+        NSApp.delegate as? AppDelegate
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -98,7 +101,7 @@ struct MenuBarView: View {
             }
 
             Button {
-                openWindow(id: "history")
+                appDelegate?.showHistory()
             } label: {
                 Label("Transcription History", systemImage: "clock")
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -136,7 +139,7 @@ struct MenuBarView: View {
     private var footerSection: some View {
         HStack {
             Button("Settings...") {
-                NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+                appDelegate?.showSettings()
             }
             .keyboardShortcut(",", modifiers: [.command])
 
@@ -223,9 +226,5 @@ struct MenuBarView: View {
     private func barHeight(for index: Int) -> CGFloat {
         let heights: [CGFloat] = [6, 10, 14, 18, 20]
         return heights[index]
-    }
-
-    private func openWindow(id: String) {
-        NSApp.sendAction(Selector(("showWindow:")), to: nil, from: nil)
     }
 }

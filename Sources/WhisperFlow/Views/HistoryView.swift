@@ -1,5 +1,4 @@
 import SwiftUI
-import SwiftData
 
 struct HistoryView: View {
     @State private var searchText = ""

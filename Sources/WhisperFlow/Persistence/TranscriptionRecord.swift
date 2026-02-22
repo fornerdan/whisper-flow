@@ -1,8 +1,7 @@
 import Foundation
-import SwiftData
 
-@Model
-final class TranscriptionRecord {
+final class TranscriptionRecord: Codable, Identifiable, Equatable, Hashable {
+    let id: UUID
     var text: String
     var language: String
     var duration: TimeInterval
@@ -12,6 +11,7 @@ final class TranscriptionRecord {
     var sourceApp: String?
 
     init(
+        id: UUID = UUID(),
         text: String,
         language: String,
         duration: TimeInterval,
@@ -20,6 +20,7 @@ final class TranscriptionRecord {
         isFavorite: Bool = false,
         sourceApp: String? = nil
     ) {
+        self.id = id
         self.text = text
         self.language = language
         self.duration = duration
@@ -27,5 +28,13 @@ final class TranscriptionRecord {
         self.createdAt = createdAt
         self.isFavorite = isFavorite
         self.sourceApp = sourceApp
+    }
+
+    static func == (lhs: TranscriptionRecord, rhs: TranscriptionRecord) -> Bool {
+        lhs.id == rhs.id
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
     }
 }

@@ -21,12 +21,17 @@ final class WhisperContext {
     var isLoaded: Bool { context != nil }
 
     init(modelPath: String) throws {
+        print("[WhisperContext] Loading model from: \(modelPath)")
+        print("[WhisperContext] File exists: \(FileManager.default.fileExists(atPath: modelPath))")
+
         var params = whisper_context_default_params()
         params.use_gpu = true
 
         guard let ctx = whisper_init_from_file_with_params(modelPath, params) else {
+            print("[WhisperContext] whisper_init_from_file_with_params returned nil!")
             throw WhisperError.modelLoadFailed(modelPath)
         }
+        print("[WhisperContext] Model loaded successfully, context: \(ctx)")
         self.context = ctx
     }
 

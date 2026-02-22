@@ -7,7 +7,7 @@ final class UserPreferences: ObservableObject {
 
     // MARK: - Model
 
-    @AppStorage("selectedModel") var selectedModel: String = "base"
+    @AppStorage("selectedModel") var selectedModel: String = "tiny"
 
     // MARK: - Transcription
 

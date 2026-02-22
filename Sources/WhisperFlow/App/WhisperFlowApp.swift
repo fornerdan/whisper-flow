@@ -1,5 +1,4 @@
 import SwiftUI
-import SwiftData
 
 @main
 struct WhisperFlowApp: App {
@@ -14,20 +13,5 @@ struct WhisperFlowApp: App {
                 .environmentObject(modelManager)
         }
         .menuBarExtraStyle(.window)
-
-        Settings {
-            SettingsView()
-                .environmentObject(transcriptionEngine)
-                .environmentObject(modelManager)
-        }
-
-        Window("Transcription History", id: "history") {
-            HistoryView()
-        }
-
-        Window("Onboarding", id: "onboarding") {
-            OnboardingView()
-                .environmentObject(modelManager)
-        }
     }
 }

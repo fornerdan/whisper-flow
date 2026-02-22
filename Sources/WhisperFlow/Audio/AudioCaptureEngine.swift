@@ -30,12 +30,17 @@ final class AudioCaptureEngine: ObservableObject {
     }()
 
     func startRecording() throws {
-        guard state != .recording else { return }
+        if case .recording = state { return }
 
         pcmBuffer.removeAll()
 
         let inputNode = audioEngine.inputNode
         let inputFormat = inputNode.outputFormat(forBus: 0)
+
+        // Check for valid audio input (no microphone = 0 channels or 0 sample rate)
+        guard inputFormat.channelCount > 0, inputFormat.sampleRate > 0 else {
+            throw AudioCaptureError.noInputDevice
+        }
 
         // Create converter from device format to whisper format
         guard let converter = AVAudioConverter(from: inputFormat, to: whisperFormat) else {
@@ -120,11 +125,14 @@ final class AudioCaptureEngine: ObservableObject {
 }
 
 enum AudioCaptureError: LocalizedError {
+    case noInputDevice
     case converterCreationFailed
     case engineStartFailed(String)
 
     var errorDescription: String? {
         switch self {
+        case .noInputDevice:
+            return "No microphone found. Please connect a microphone and try again."
         case .converterCreationFailed:
             return "Failed to create audio format converter"
         case .engineStartFailed(let reason):

@@ -44,7 +44,9 @@ final class TranscriptionEngine: ObservableObject {
         // Forward audio level from capture engine
         audioCancellable = audioCaptureEngine.$audioLevel
             .receive(on: RunLoop.main)
-            .assign(to: &$audioLevel)
+            .sink { [weak self] level in
+                self?.audioLevel = level
+            }
     }
 
     var isModelLoaded: Bool {

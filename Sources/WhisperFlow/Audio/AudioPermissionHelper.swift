@@ -1,4 +1,5 @@
 import AVFoundation
+import AppKit
 
 enum AudioPermissionStatus {
     case granted
