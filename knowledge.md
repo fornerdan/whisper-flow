@@ -127,11 +127,23 @@ Manage models from **Settings > Transcription > Model**.
 
 Models are stored in `~/Library/Application Support/WhisperFlow/Models/`.
 
+### iCloud Sync
+
+WhisperFlow syncs your transcription history across all your devices via iCloud. Sync is **on by default**.
+
+- **How it works** — When you create, rename, favorite, or delete a transcription on one device, the change automatically appears on your other devices signed into the same iCloud account.
+- **Offline support** — Changes made while offline are queued and synced when you reconnect.
+- **Conflict handling** — If the same transcription is edited on two devices before syncing, the most recent edit wins.
+- **Initial sync** — When sync is first enabled, all existing local transcriptions are uploaded to iCloud. Any transcriptions from other devices are downloaded and merged.
+- **Disable sync** — Go to **Settings > General** and turn off "Sync with iCloud". Your local history remains intact; it just stops syncing.
+- **Sync status** — Settings shows when the last successful sync occurred.
+
 ### Settings
 
 Open settings from the menu bar dropdown or via the gear icon.
 
 **General tab:**
+- **Sync with iCloud** — Toggle cross-device sync of transcription history. On by default.
 - **Launch at login** — Start WhisperFlow automatically when you log in.
 - **Show overlay HUD** — Toggle the floating recording/transcribing indicator.
 - **Play sounds** — Toggle start/stop sound effects (Tink/Pop).
@@ -218,10 +230,20 @@ Go to the **History** tab to see all past transcriptions.
 - **Rename** — Long-press and choose **Rename…** (or use the Rename button in the detail view toolbar) to give a transcription a custom title. The title appears in the list instead of the raw text. Leave the title empty to revert to showing the original text.
 - **Delete** — Swipe left to delete, or long-press and choose **Delete**.
 
+### iCloud Sync
+
+Your transcription history syncs across all your Apple devices via iCloud.
+
+- **On by default** — Sync is enabled when you first install WhisperFlow. No setup required beyond being signed into iCloud.
+- **Toggle in Settings** — Go to **Settings** and turn "Sync with iCloud" on or off.
+- **Automatic** — New transcriptions, renames, favorites, and deletions propagate to your other devices automatically.
+- **Offline** — If you're offline, changes are saved locally and sync when you reconnect.
+
 ### Settings
 
 Go to the **Settings** tab.
 
+- **Sync with iCloud** — Toggle cross-device sync of transcription history. On by default.
 - **Language** — Choose from 28 languages or leave on Auto-detect.
 - **Keyboard Extension** — Step-by-step setup instructions for enabling the keyboard (same steps as above).
 - **About** — Shows the app version and whisper.cpp engine version (v1.7.4).

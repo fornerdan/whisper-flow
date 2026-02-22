@@ -1,6 +1,6 @@
 # WhisperFlow Tests
 
-**Total: 64 tests across 9 test files**
+**Total: 79 tests across 10 test files**
 
 > Tests require Xcode (not just Command Line Tools) to run via `xcodebuild test -scheme WhisperFlowTests -destination 'platform=macOS'`. SPM `swift test` does not work because XCTest is only available through the Xcode toolchain.
 
@@ -36,7 +36,7 @@
 | `testModelFilenames` | All model filenames match `ggml-*.bin` convention |
 | `testDownloadURLsAreValid` | All download URLs point to huggingface.co |
 
-### `Tests/WhisperFlowTests/TranscriptionRecordTests.swift` (18 tests)
+### `Tests/WhisperFlowTests/TranscriptionRecordTests.swift` (23 tests)
 
 | Test | Description |
 |------|-------------|
@@ -56,6 +56,11 @@
 | `testDecodingWithTitleField` | JSON with `title` decodes correctly |
 | `testEncodingIncludesTitle` | Encoding includes title in JSON output |
 | `testRoundTripEncodingDecoding` | Encode → decode preserves all fields including title |
+| `testModifiedAtDefaultsToCreatedAt` | New records have `modifiedAt` equal to `createdAt` |
+| `testModifiedAtCanBeSetExplicitly` | `modifiedAt` can be set to a custom value via init |
+| `testDecodingWithoutModifiedAtField` | Backward compatibility — JSON without `modifiedAt` falls back to `createdAt` |
+| `testDecodingWithModifiedAtField` | JSON with `modifiedAt` decodes correctly as a distinct value |
+| `testEncodingIncludesModifiedAt` | Encoding includes `modifiedAt` in JSON output |
 | `testRenameRecordSetsTitle` | `DataStore.renameRecord` sets title, and clearing with empty string reverts to nil |
 | `testSearchMatchesTitle` | `DataStore.fetchRecords` search matches against both title and text |
 
@@ -107,6 +112,21 @@
 | `testHotkeyCallbacksAreNilByDefault` | Both `onHotkeyPressed` and `onLauncherHotkeyPressed` are optional closures |
 | `testLauncherHotkeyCallbackIsSettable` | Can set and invoke `onLauncherHotkeyPressed` closure |
 
+### `Tests/WhisperFlowTests/CloudSyncTests.swift` (10 tests)
+
+| Test | Description |
+|------|-------------|
+| `testSaveTranscriptionPushesToSyncEngine` | Saving a transcription calls `pushRecord` on the sync engine |
+| `testDeleteRecordPushesDeletion` | Deleting a record calls `pushDeletion` on the sync engine |
+| `testToggleFavoriteUpdatesModifiedAt` | Toggling favorite updates the record's `modifiedAt` timestamp |
+| `testRenameUpdatesModifiedAt` | Renaming a record updates the record's `modifiedAt` timestamp |
+| `testMergeRemoteUpsertNewRecord` | Remote record with unknown ID gets inserted into local store |
+| `testMergeRemoteUpsertConflictNewerWins` | Remote record with newer `modifiedAt` overwrites local record |
+| `testMergeRemoteUpsertConflictLocalWins` | Local record with newer `modifiedAt` is kept over remote |
+| `testMergeRemoteDeletion` | Remote deletion removes the corresponding local record |
+| `testInitialSyncUploadsAllLocal` | `performInitialSync` receives all local records |
+| `testSyncDisabledDoesNotPush` | No sync operations occur when engine `isEnabled` is false |
+
 ### `Tests/WhisperFlowTests/UserPreferencesTests.swift` (3 tests)
 
 | Test | Description |
@@ -120,9 +140,10 @@
 - **Audio Capture** — sample rate, channel count, initial state
 - **Transcription** — segment/result data types, error descriptions
 - **Model Management** — catalog contents, lookup, speed/quality ordering, file naming, download URLs
-- **Transcription Record** — title property, displayTitle logic (truncation, first line, fallback), Codable backward compatibility, rename via DataStore, title-aware search
+- **Transcription Record** — title property, displayTitle logic (truncation, first line, fallback), Codable backward compatibility (title, sourceFile, modifiedAt), rename via DataStore, title-aware search
 - **System Integration** — accessibility trust check, audio permissions, error types
 - **Launcher** — LauncherItem data model, LauncherAction enum cases, LauncherPanel show/hide/toggle lifecycle
 - **App Intents** — intent titles, descriptions, parameters, IntentError localization, shortcuts provider count
 - **Hotkey Manager** — default key bindings (recording + launcher), callback property access and assignment
+- **iCloud Sync** — push on save/delete, modifiedAt updates on mutations, merge logic (new record, conflict newer/older wins, deletion), initial sync upload, disabled engine no-op
 - **User Preferences** — dock visibility default, hotkey display strings

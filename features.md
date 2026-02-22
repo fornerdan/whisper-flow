@@ -12,6 +12,7 @@ On-device speech-to-text powered by [whisper.cpp](https://github.com/ggerganov/w
 | Translate any language to English | Yes | Yes |
 | Model download & management | Yes | Yes |
 | Transcription history | Yes | Yes |
+| iCloud sync (CloudKit) | Yes | Yes |
 | History export (Plain Text, JSON, CSV) | Yes | Yes |
 | Audio file import (wav, mp3, m4a, etc.) | Yes | - |
 | Copy to clipboard | Yes | Yes |
@@ -55,6 +56,18 @@ WhisperFlow lives in the menu bar and works system-wide.
 - 10 Whisper models available (Tiny through Large v3, plus quantized variants)
 - Default recommendation: **Base** (142 MB) — good balance of speed and accuracy
 - Download progress tracking, load/unload, delete
+
+### iCloud Sync
+- **CloudKit private database** — transcription history syncs across all devices signed into the same iCloud account
+- **On by default** — toggle "Sync with iCloud" in Settings > General
+- **Sync status** — Settings shows last synced timestamp
+- **Offline resilience** — changes queue locally (pending upload/deletion) and sync when connectivity returns
+- **Conflict resolution** — last-write-wins based on `modifiedAt` timestamp
+- **Push notifications** — CKDatabaseSubscription triggers near-instant sync when remote changes occur
+- **Foreground fetch** — also fetches changes every time the app becomes active, as a fallback
+- **Initial sync** — on first enable, all existing local records are uploaded in batches
+- **Custom zone** — uses `TranscriptionHistory` CKRecordZone for incremental change token tracking
+- **iCloud container** — `iCloud.com.whisperflow.app` (shared between macOS and iOS)
 
 ### System Integration
 - Launch at login (via ServiceManagement)
@@ -118,8 +131,10 @@ Both platforms share a common library:
 - **StreamingTranscriber** — Chunked real-time transcription with overlap
 - **ModelCatalog** — 10 model definitions with platform-aware recommendations
 - **ModelManager** — Download, load, delete with progress tracking (decoupled via `ModelLoadHandler` protocol)
-- **DataStore** — JSON-backed transcription history with search, favorites, rename, pagination
-- **TranscriptionRecord** — Data model (text, language, duration, model, source app, source file, favorite, optional title with displayTitle computed property)
+- **DataStore** — JSON-backed transcription history with search, favorites, rename, pagination, and optional CloudKit sync
+- **TranscriptionRecord** — Data model (text, language, duration, model, source app, source file, favorite, optional title with displayTitle computed property, modifiedAt for sync conflict resolution)
+- **CloudSyncEngine** — Protocol + `CKCloudSyncEngine` implementation for iCloud sync via CloudKit private database (custom zone, change tokens, batch operations, CKSubscription)
+- **SyncMetadataStore** — Tracks pending uploads/deletions and persists CKServerChangeToken for incremental fetches
 - **HistoryExporter** — Export transcription records as Plain Text, JSON, or CSV with proper quoting/escaping
 - **SharedContainer** — App Group UserDefaults + Darwin notification IPC
 
@@ -142,4 +157,5 @@ Both platforms share a common library:
 
 - **macOS**: 14.0+ (Sonoma), Microphone + Accessibility permissions
 - **iOS**: 16.0+, Microphone permission, keyboard "Allow Full Access" for extension
-- **Apple Developer Account**: Required for App Group entitlement (iOS keyboard IPC)
+- **Apple Developer Account**: Required for App Group entitlement (iOS keyboard IPC) and iCloud/CloudKit entitlement (sync)
+- **iCloud Account**: Required for cross-device sync (signed in on each device)

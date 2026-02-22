@@ -20,6 +20,7 @@ System frameworks — no separate license required.
 | Accelerate | macOS, iOS | Linear algebra and signal processing optimizations for inference |
 | Metal | macOS, iOS | GPU compute for whisper.cpp via the GGML Metal backend |
 | MetalKit | macOS, iOS | Metal rendering utilities |
+| CloudKit | macOS, iOS | iCloud sync of transcription history via CKDatabase (private database), CKRecordZone, CKFetchRecordZoneChangesOperation, CKDatabaseSubscription |
 | CoreML | macOS, iOS | Linked framework (available for future CoreML model support) |
 | Foundation | macOS, iOS | Standard data types, file I/O, networking, JSON encoding |
 | SwiftUI | macOS, iOS | Declarative UI for all views (settings, onboarding, history, etc.) |

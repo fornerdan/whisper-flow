@@ -10,6 +10,7 @@ On-device speech-to-text for macOS and iOS, powered by [whisper.cpp](https://git
 - **10 Whisper models** — from Tiny (75 MB) to Large v3 (2.9 GB), including quantized variants
 - **Streaming preview** — see partial transcriptions as you speak
 - **Searchable history** with favorites and source app tracking
+- **iCloud sync** — transcription history syncs across Mac and iPhone via CloudKit
 
 ### macOS
 
@@ -85,6 +86,7 @@ WhisperFlow/
 │   │   ├── Transcription/   # WhisperContext, StreamingTranscriber
 │   │   ├── Models/          # ModelCatalog, ModelManager
 │   │   ├── Persistence/     # JSON-backed transcription history
+│   │   ├── Sync/            # iCloud sync via CloudKit
 │   │   └── IPC/             # App Group shared container
 │   ├── WhisperFlow/         # macOS app (menu bar extra + launcher + intents)
 │   ├── WhisperFlowiOS/      # iOS host app (tab-based)
@@ -125,6 +127,16 @@ Models are downloaded at runtime from [Hugging Face](https://huggingface.co/gger
 - **[features.md](features.md)** — Detailed feature matrix and technical specs
 - **[libraries.md](libraries.md)** — All dependencies with URLs and licenses
 - **[knowledge.md](knowledge.md)** — Step-by-step user guide for macOS and iOS
+
+## iCloud Sync
+
+WhisperFlow syncs transcription history across all your devices via CloudKit (private database). Sync is **on by default** — toggle it in Settings on either platform.
+
+- Creates/updates/deletes propagate automatically between Mac and iPhone
+- Offline changes queue locally and sync when connectivity returns
+- Conflicts resolved via last-write-wins using `modifiedAt` timestamps
+- Silent push notifications (CKSubscription) trigger near-instant sync; foreground fetch as fallback
+- No additional account setup required — uses the signed-in iCloud account
 
 ## Acknowledgments
 
