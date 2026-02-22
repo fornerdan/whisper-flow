@@ -14,10 +14,12 @@ On-device speech-to-text for macOS and iOS, powered by [whisper.cpp](https://git
 ### macOS
 
 - Global hotkey (Cmd+Shift+Space) works in any app
+- **Command palette launcher** (Cmd+Shift+W) — Spotlight-style quick actions and transcription search
 - Auto-types transcribed text into the focused app via accessibility APIs
 - Auto-copies to clipboard
-- Menu bar app — no Dock icon, always accessible
+- Menu bar app with optional **Dock presence** toggle
 - Floating overlay HUD shows recording/transcribing state
+- **Shortcuts.app & Siri integration** — Toggle Recording, Get Last Transcription, Search Transcriptions
 - Launch at login
 
 ### iOS
@@ -84,7 +86,7 @@ WhisperFlow/
 │   │   ├── Models/          # ModelCatalog, ModelManager
 │   │   ├── Persistence/     # JSON-backed transcription history
 │   │   └── IPC/             # App Group shared container
-│   ├── WhisperFlow/         # macOS app (menu bar extra)
+│   ├── WhisperFlow/         # macOS app (menu bar extra + launcher + intents)
 │   ├── WhisperFlowiOS/      # iOS host app (tab-based)
 │   └── WhisperKeyboard/     # iOS keyboard extension
 ├── Tests/

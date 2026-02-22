@@ -30,6 +30,42 @@ WhisperFlow shows a 5-step onboarding wizard on first launch:
 
 WhisperFlow also supports **streaming preview** — partial transcription results appear every 3 seconds as you speak, so you can see progress in real time.
 
+### Command Palette Launcher
+
+Press **Cmd+Shift+W** to open the command palette — a Spotlight-style floating panel for quick actions and transcription search.
+
+- **Commands** — Start/Stop/Cancel Recording, Open Settings, Open History. Available commands change based on the current recording state.
+- **Search** — Type to search your transcription history. Matching results appear above the commands.
+- **Keyboard navigation** — Use Up/Down arrow keys to navigate, Enter to execute, Escape to dismiss.
+- **Click-away dismiss** — Clicking anywhere outside the launcher closes it automatically.
+- **Copy transcription** — Select a transcription result and press Enter to copy it to the clipboard.
+
+### Dock Presence
+
+By default, WhisperFlow is a menu-bar-only app with no Dock icon. To show it in the Dock:
+
+1. Open **Settings > General**.
+2. Enable **Show WhisperFlow in Dock**.
+3. The app icon appears in the Dock immediately.
+4. Click the Dock icon to open the command palette.
+5. Disable the toggle to hide the Dock icon again.
+
+When "Show in Dock" is enabled, closing the Settings or History window does not hide the app from the Dock.
+
+### Shortcuts & Siri Integration
+
+WhisperFlow provides three actions for Shortcuts.app and Siri:
+
+- **Toggle Recording** — Start or stop voice recording. Says "Start recording with WhisperFlow" or "Toggle recording in WhisperFlow".
+- **Get Last Transcription** — Returns the text of your most recent transcription. Says "Get last transcription from WhisperFlow".
+- **Search Transcriptions** — Search your history by text and returns up to 10 matching results. Says "Search transcriptions in WhisperFlow".
+
+To use these:
+1. Open **Shortcuts.app**.
+2. Create a new shortcut and search for "WhisperFlow".
+3. Add any of the three actions to your shortcut.
+4. You can also trigger them via Siri using the phrases listed above.
+
 ### Transcription History
 
 Open history from the menu bar dropdown by clicking **History** (or the clock icon).
@@ -61,6 +97,7 @@ Open settings from the menu bar dropdown or via the gear icon.
 - **Launch at login** — Start WhisperFlow automatically when you log in.
 - **Show overlay HUD** — Toggle the floating recording/transcribing indicator.
 - **Play sounds** — Toggle start/stop sound effects (Tink/Pop).
+- **Show in Dock** — Toggle Dock icon visibility. When enabled, clicking the Dock icon opens the command palette.
 - **Auto-inject text** — Toggle automatically typing transcribed text into the focused app. Requires Accessibility permission.
 - **Copy to clipboard** — Toggle automatically copying transcriptions to the clipboard.
 
@@ -69,7 +106,8 @@ Open settings from the menu bar dropdown or via the gear icon.
 - **Model** — View the currently loaded model, download new models, or switch between downloaded models.
 
 **Hotkey tab:**
-- Displays the current hotkey (default: Cmd+Shift+Space). A future update will add hotkey customization.
+- **Toggle Recording** — Displays the recording hotkey (default: Cmd+Shift+Space).
+- **Open Launcher** — Displays the launcher hotkey (default: Cmd+Shift+W).
 
 **About tab:**
 - Shows the app version and whisper.cpp acknowledgment.

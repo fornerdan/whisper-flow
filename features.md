@@ -17,9 +17,11 @@ On-device speech-to-text powered by [whisper.cpp](https://github.com/ggerganov/w
 | Full transcription detail view | Yes | Yes |
 | Offline operation | Yes | Yes |
 | Global hotkey (Cmd+Shift+Space) | Yes | - |
+| Command palette launcher (Cmd+Shift+W) | Yes | - |
 | Auto-type into focused app | Yes | - |
-| Menu bar app (no Dock icon) | Yes | - |
+| Menu bar app (optional Dock icon) | Yes | - |
 | Floating overlay HUD | Yes | - |
+| Shortcuts.app & Siri integration | Yes | - |
 | Custom keyboard extension | - | Yes |
 | Deep link recording (whisperflow://) | - | Yes |
 | Keyboard → host app IPC | - | Yes |
@@ -37,7 +39,9 @@ WhisperFlow lives in the menu bar and works system-wide.
 
 ### User Interface
 - **Menu bar extra** — Compact window with status, last transcription, and quick actions
+- **Command palette launcher** — Spotlight-style panel (Cmd+Shift+W) for quick actions and transcription search with keyboard navigation
 - **Floating overlay HUD** — Recording/transcribing indicator positioned at top of screen
+- **Optional Dock icon** — Toggle "Show in Dock" in Settings; clicking the Dock icon opens the launcher
 - **Transcription history** — Searchable list with favorites, source app tracking, detail view, custom titles (rename), and native sharing
 - **Settings panel** — General, Transcription, Hotkey, and About tabs
 
@@ -50,6 +54,8 @@ WhisperFlow lives in the menu bar and works system-wide.
 - Launch at login (via ServiceManagement)
 - Accessibility permission for text injection (CGEvent keystrokes + clipboard paste)
 - Hardened runtime with required entitlements
+- **Shortcuts.app integration** — Three AppIntents: Toggle Recording, Get Last Transcription, Search Transcriptions
+- **Siri support** — Voice phrases to trigger recording or retrieve transcriptions
 
 ## iOS App
 
