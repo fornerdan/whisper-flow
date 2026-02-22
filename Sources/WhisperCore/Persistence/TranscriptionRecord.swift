@@ -9,6 +9,19 @@ public final class TranscriptionRecord: Codable, Identifiable, Equatable, Hashab
     public var createdAt: Date
     public var isFavorite: Bool
     public var sourceApp: String?
+    public var title: String?
+
+    /// Returns `title` if set, otherwise the first line of `text` truncated to 100 characters.
+    public var displayTitle: String {
+        if let title, !title.isEmpty {
+            return title
+        }
+        let firstLine = text.prefix(while: { $0 != "\n" && $0 != "\r" })
+        if firstLine.count > 100 {
+            return String(firstLine.prefix(100)) + "…"
+        }
+        return String(firstLine)
+    }
 
     public init(
         id: UUID = UUID(),
@@ -18,7 +31,8 @@ public final class TranscriptionRecord: Codable, Identifiable, Equatable, Hashab
         modelUsed: String,
         createdAt: Date = Date(),
         isFavorite: Bool = false,
-        sourceApp: String? = nil
+        sourceApp: String? = nil,
+        title: String? = nil
     ) {
         self.id = id
         self.text = text
@@ -28,6 +42,7 @@ public final class TranscriptionRecord: Codable, Identifiable, Equatable, Hashab
         self.createdAt = createdAt
         self.isFavorite = isFavorite
         self.sourceApp = sourceApp
+        self.title = title
     }
 
     public static func == (lhs: TranscriptionRecord, rhs: TranscriptionRecord) -> Bool {

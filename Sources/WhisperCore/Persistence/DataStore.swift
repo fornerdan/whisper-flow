@@ -90,10 +90,11 @@ public final class DataStore {
             result = result.filter { $0.isFavorite }
         }
 
-        // Filter by search text
+        // Filter by search text (matches title and text)
         if !searchText.isEmpty {
             result = result.filter {
                 $0.text.localizedCaseInsensitiveContains(searchText)
+                || ($0.title?.localizedCaseInsensitiveContains(searchText) ?? false)
             }
         }
 
@@ -122,6 +123,15 @@ public final class DataStore {
     public func toggleFavorite(_ record: TranscriptionRecord) throws {
         if let index = records.firstIndex(where: { $0.id == record.id }) {
             records[index].isFavorite.toggle()
+            saveToDisk()
+        }
+    }
+
+    // MARK: - Rename
+
+    public func renameRecord(_ record: TranscriptionRecord, title: String) throws {
+        if let index = records.firstIndex(where: { $0.id == record.id }) {
+            records[index].title = title.isEmpty ? nil : title
             saveToDisk()
         }
     }
