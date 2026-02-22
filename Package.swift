@@ -86,6 +86,7 @@ let package = Package(
                 .linkedFramework("AppKit"),
                 .linkedFramework("Carbon"),
                 .linkedFramework("ServiceManagement"),
+                .linkedFramework("AppIntents"),
             ]
         ),
         .testTarget(

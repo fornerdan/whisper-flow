@@ -19,6 +19,7 @@ final class UserPreferences: ObservableObject {
 
     @AppStorage("showOverlayHUD") var showOverlayHUD: Bool = true
     @AppStorage("playSound") var playSound: Bool = true
+    @AppStorage("showInDock") var showInDock: Bool = false
     @AppStorage("launchAtLogin") var launchAtLogin: Bool = false {
         didSet {
             updateLoginItem()
@@ -31,6 +32,10 @@ final class UserPreferences: ObservableObject {
         // KeyboardShortcuts handles the actual key binding.
         // This is just for display in the menu bar.
         return "\u{2318}\u{21E7}Space"
+    }
+
+    var launcherHotkeyDisplayString: String {
+        return "\u{2318}\u{21E7}W"
     }
 
     // MARK: - Launch at Login

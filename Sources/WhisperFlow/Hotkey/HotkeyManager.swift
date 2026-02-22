@@ -7,17 +7,25 @@ final class HotkeyManager {
     static let shared = HotkeyManager()
 
     private var hotkeyRef: EventHotKeyRef?
+    private var launcherHotkeyRef: EventHotKeyRef?
     private var eventHandler: EventHandlerRef?
 
-    // Hotkey ID
+    // Hotkey IDs (same signature, different id)
     private let hotkeyID = EventHotKeyID(signature: OSType(0x5746_4C57), // "WFLW"
                                           id: 1)
+    private let launcherHotkeyID = EventHotKeyID(signature: OSType(0x5746_4C57),
+                                                  id: 2)
 
-    // Default: Cmd+Shift+Space
+    // Default: Cmd+Shift+Space for recording
     private(set) var keyCode: UInt32 = UInt32(kVK_Space)
     private(set) var modifiers: UInt32 = UInt32(cmdKey | shiftKey)
 
+    // Default: Cmd+Shift+W for launcher
+    private(set) var launcherKeyCode: UInt32 = UInt32(kVK_ANSI_W)
+    private(set) var launcherModifiers: UInt32 = UInt32(cmdKey | shiftKey)
+
     var onHotkeyPressed: (() -> Void)?
+    var onLauncherHotkeyPressed: (() -> Void)?
 
     private init() {}
 
@@ -43,15 +51,23 @@ final class HotkeyManager {
                 &hotKeyID
             )
 
-            guard status == noErr, hotKeyID.id == manager.hotkeyID.id else {
+            guard status == noErr else {
                 return OSStatus(eventNotHandledErr)
             }
 
-            DispatchQueue.main.async {
-                manager.onHotkeyPressed?()
+            if hotKeyID.id == manager.hotkeyID.id {
+                DispatchQueue.main.async {
+                    manager.onHotkeyPressed?()
+                }
+                return noErr
+            } else if hotKeyID.id == manager.launcherHotkeyID.id {
+                DispatchQueue.main.async {
+                    manager.onLauncherHotkeyPressed?()
+                }
+                return noErr
             }
 
-            return noErr
+            return OSStatus(eventNotHandledErr)
         }
 
         let selfPtr = Unmanaged.passUnretained(self).toOpaque()
@@ -64,7 +80,7 @@ final class HotkeyManager {
             &eventHandler
         )
 
-        // Register the hotkey
+        // Register the recording hotkey
         var ref: EventHotKeyRef?
         var keyID = hotkeyID
         let status = RegisterEventHotKey(
@@ -80,7 +96,23 @@ final class HotkeyManager {
             hotkeyRef = ref
         }
 
-        // Set up the callback
+        // Register the launcher hotkey
+        var launcherRef: EventHotKeyRef?
+        var launcherKeyIDVar = launcherHotkeyID
+        let launcherStatus = RegisterEventHotKey(
+            launcherKeyCode,
+            launcherModifiers,
+            launcherKeyIDVar,
+            GetApplicationEventTarget(),
+            0,
+            &launcherRef
+        )
+
+        if launcherStatus == noErr {
+            launcherHotkeyRef = launcherRef
+        }
+
+        // Set up the recording callback
         onHotkeyPressed = {
             Task { @MainActor in
                 TranscriptionEngine.shared.toggleRecording()
@@ -92,6 +124,10 @@ final class HotkeyManager {
         if let ref = hotkeyRef {
             UnregisterEventHotKey(ref)
             hotkeyRef = nil
+        }
+        if let ref = launcherHotkeyRef {
+            UnregisterEventHotKey(ref)
+            launcherHotkeyRef = nil
         }
         if let handler = eventHandler {
             RemoveEventHandler(handler)

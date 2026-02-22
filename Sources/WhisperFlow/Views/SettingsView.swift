@@ -48,6 +48,13 @@ struct GeneralSettingsTab: View {
                 Toggle("Play sounds on start/stop", isOn: $prefs.playSound)
             }
 
+            Section("Dock") {
+                Toggle("Show WhisperFlow in Dock", isOn: $prefs.showInDock)
+                    .onChange(of: prefs.showInDock) { _, _ in
+                        AppDelegate.shared?.applyDockPreference()
+                    }
+            }
+
             Section("Output") {
                 Toggle("Auto-inject text into focused app", isOn: $prefs.autoInjectText)
                 Toggle("Copy transcription to clipboard", isOn: $prefs.copyToClipboard)
@@ -128,6 +135,25 @@ struct HotkeySettingsTab: View {
                 Text("To customize the hotkey, a future update will add a recorder. The default is Cmd+Shift+Space.")
                     .font(.caption)
                     .foregroundStyle(.tertiary)
+            }
+
+            Section("Launcher") {
+                HStack {
+                    Text("Open Launcher:")
+                    Spacer()
+                    Text(UserPreferences.shared.launcherHotkeyDisplayString)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(
+                            RoundedRectangle(cornerRadius: 6)
+                                .fill(Color.secondary.opacity(0.15))
+                        )
+                        .font(.system(.body, design: .rounded, weight: .medium))
+                }
+
+                Text("Opens a command palette for quick actions and transcription search.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
         }
         .formStyle(.grouped)

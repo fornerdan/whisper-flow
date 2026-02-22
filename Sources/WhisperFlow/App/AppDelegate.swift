@@ -9,6 +9,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     private var overlayHostingView: NSHostingView<OverlayHUD>?
     private var settingsWindow: NSWindow?
     private var historyWindow: NSWindow?
+    private var launcherPanel: LauncherPanel?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         Self.shared = self
@@ -22,6 +23,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 
         // Set up overlay panel
         setupOverlayPanel()
+
+        // Set up launcher panel
+        launcherPanel = LauncherPanel()
+        HotkeyManager.shared.onLauncherHotkeyPressed = { [weak self] in
+            self?.launcherPanel?.toggle()
+        }
+
+        // Apply dock preference
+        if UserPreferences.shared.showInDock {
+            NSApp.setActivationPolicy(.regular)
+        }
 
         // Load the selected model if available
         Task {
@@ -40,6 +52,32 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 
     func applicationWillTerminate(_ notification: Notification) {
         HotkeyManager.shared.unregister()
+    }
+
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        launcherPanel?.toggle()
+        return false
+    }
+
+    // MARK: - Launcher
+
+    func showLauncher() {
+        launcherPanel?.show()
+    }
+
+    // MARK: - Dock Preference
+
+    func applyDockPreference() {
+        if UserPreferences.shared.showInDock {
+            NSApp.setActivationPolicy(.regular)
+        } else {
+            // Only revert if no windows are visible
+            let settingsVisible = settingsWindow?.isVisible ?? false
+            let historyVisible = historyWindow?.isVisible ?? false
+            if !settingsVisible && !historyVisible {
+                NSApp.setActivationPolicy(.accessory)
+            }
+        }
     }
 
     // MARK: - Settings Window
@@ -177,11 +215,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     // MARK: - NSWindowDelegate
 
     func windowWillClose(_ notification: Notification) {
-        // Revert to accessory (no Dock icon) when all managed windows are closed
+        // Revert to accessory (no Dock icon) when all managed windows are closed,
+        // unless the user has enabled "Show in Dock"
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [self] in
             let settingsVisible = settingsWindow?.isVisible ?? false
             let historyVisible = historyWindow?.isVisible ?? false
-            if !settingsVisible && !historyVisible {
+            if !settingsVisible && !historyVisible && !UserPreferences.shared.showInDock {
                 NSApp.setActivationPolicy(.accessory)
             }
         }
