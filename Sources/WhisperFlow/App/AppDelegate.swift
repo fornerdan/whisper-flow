@@ -2,12 +2,15 @@ import AppKit
 import SwiftUI
 
 final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
+    static private(set) var shared: AppDelegate!
+
     private var overlayPanel: NSPanel?
     private var overlayHostingView: NSHostingView<OverlayHUD>?
     private var settingsWindow: NSWindow?
     private var historyWindow: NSWindow?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        Self.shared = self
         // Register global hotkey
         HotkeyManager.shared.register()
 
@@ -41,9 +44,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     // MARK: - Settings Window
 
     func showSettings() {
-        // Set activation policy IMMEDIATELY — prevents app from deactivating
-        // when MenuBarExtra popup dismisses
+        // Set activation policy and activate IMMEDIATELY — prevents app from
+        // deactivating when MenuBarExtra popup dismisses
         NSApp.setActivationPolicy(.regular)
+        NSApp.activate(ignoringOtherApps: true)
 
         // Delay to let MenuBarExtra popup fully dismiss
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [self] in
@@ -75,9 +79,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     // MARK: - History Window
 
     func showHistory() {
-        // Set activation policy IMMEDIATELY — prevents app from deactivating
-        // when MenuBarExtra popup dismisses
+        // Set activation policy and activate IMMEDIATELY — prevents app from
+        // deactivating when MenuBarExtra popup dismisses
         NSApp.setActivationPolicy(.regular)
+        NSApp.activate(ignoringOtherApps: true)
 
         // Delay to let MenuBarExtra popup fully dismiss
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [self] in

@@ -1,14 +1,32 @@
 import SwiftUI
+import AVFoundation
 
 struct MenuBarView: View {
     @EnvironmentObject var engine: TranscriptionEngine
     @EnvironmentObject var modelManager: ModelManager
-    private var appDelegate: AppDelegate? {
-        NSApp.delegate as? AppDelegate
+    @State private var micStatus: MicStatus = .unknown
+
+    private enum MicStatus {
+        case unknown, available, noPermission, noDevice
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
+            // Microphone warning (if needed)
+            if case .noPermission = micStatus {
+                micWarning(
+                    message: "Microphone access denied",
+                    action: "Open System Settings",
+                    handler: { AudioPermissionHelper.openSystemPreferences() }
+                )
+            } else if case .noDevice = micStatus {
+                micWarning(
+                    message: "No microphone detected",
+                    action: nil,
+                    handler: nil
+                )
+            }
+
             // Status header
             statusSection
 
@@ -35,6 +53,7 @@ struct MenuBarView: View {
         }
         .padding(12)
         .frame(width: 320)
+        .onAppear { checkMicStatus() }
     }
 
     // MARK: - Sections
@@ -101,7 +120,7 @@ struct MenuBarView: View {
             }
 
             Button {
-                appDelegate?.showHistory()
+                AppDelegate.shared?.showHistory()
             } label: {
                 Label("Transcription History", systemImage: "clock")
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -139,7 +158,7 @@ struct MenuBarView: View {
     private var footerSection: some View {
         HStack {
             Button("Settings...") {
-                appDelegate?.showSettings()
+                AppDelegate.shared?.showSettings()
             }
             .keyboardShortcut(",", modifiers: [.command])
 
@@ -226,5 +245,42 @@ struct MenuBarView: View {
     private func barHeight(for index: Int) -> CGFloat {
         let heights: [CGFloat] = [6, 10, 14, 18, 20]
         return heights[index]
+    }
+
+    private func micWarning(message: String, action: String?, handler: (() -> Void)?) -> some View {
+        HStack(spacing: 6) {
+            Image(systemName: "mic.slash.fill")
+                .foregroundStyle(.orange)
+            Text(message)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            Spacer()
+            if let action, let handler {
+                Button(action, action: handler)
+                    .font(.caption)
+                    .buttonStyle(.link)
+            }
+        }
+        .padding(8)
+        .background(Color.orange.opacity(0.1))
+        .cornerRadius(6)
+    }
+
+    private func checkMicStatus() {
+        switch AudioPermissionHelper.status {
+        case .denied:
+            micStatus = .noPermission
+        case .granted:
+            // Check if there's actually an audio input device
+            let engine = AVAudioEngine()
+            let format = engine.inputNode.outputFormat(forBus: 0)
+            if format.channelCount == 0 || format.sampleRate == 0 {
+                micStatus = .noDevice
+            } else {
+                micStatus = .available
+            }
+        case .notDetermined:
+            micStatus = .noPermission
+        }
     }
 }
