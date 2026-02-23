@@ -166,9 +166,21 @@ struct MenuBarView: View {
                         .progressViewStyle(.linear)
                 }
             } else {
-                Text("No model loaded")
+                VStack(alignment: .leading, spacing: 4) {
+                    Button("Download Base Model (142 MB)") {
+                        Task {
+                            try? await modelManager.downloadAndLoadDefault()
+                        }
+                    }
                     .font(.caption)
+
+                    Button("Choose Model...") {
+                        AppDelegate.shared?.showSettings()
+                    }
+                    .font(.caption2)
+                    .buttonStyle(.plain)
                     .foregroundStyle(.secondary)
+                }
             }
 
             Spacer()
