@@ -1,6 +1,6 @@
 # WhisperFlow Tests
 
-**Total: 101 tests across 13 test files**
+**Total: 100 tests across 13 test files**
 
 > Tests require Xcode (not just Command Line Tools) to run via `xcodebuild test -scheme WhisperFlowTests -destination 'platform=macOS'`. SPM `swift test` does not work because XCTest is only available through the Xcode toolchain.
 
@@ -36,7 +36,7 @@
 | `testModelFilenames` | All model filenames match `ggml-*.bin` convention |
 | `testDownloadURLsAreValid` | All download URLs point to huggingface.co |
 
-### `Tests/WhisperFlowTests/TranscriptionRecordTests.swift` (23 tests)
+### `Tests/WhisperFlowTests/TranscriptionRecordTests.swift` (22 tests)
 
 | Test | Description |
 |------|-------------|
@@ -62,7 +62,6 @@
 | `testEncodingIncludesSourceFile` | Encoding includes `sourceFile` in JSON output |
 | `testRenameRecordSetsTitle` | `DataStore.renameRecord` sets title, and clearing with empty string reverts to nil |
 | `testSearchMatchesTitle` | `DataStore.fetchRecords` search matches against both title and text |
-| `testDisplayTitlePrefersCustomTitleOverLongText` | Custom title takes precedence over long text |
 
 ### `Tests/WhisperFlowTests/TextInjectorTests.swift` (4 tests)
 
@@ -166,10 +165,10 @@
 
 | Test | Description |
 |------|-------------|
-| `testAudioDeviceManagerListsDevices` | `availableDevices` is non-empty (at least one input device) |
-| `testAudioDeviceManagerHasDefault` | At least one device has `isDefault == true` |
+| `testAudioDeviceManagerInitializes` | `AudioDeviceManager` initializes without crashing even with no devices |
+| `testAudioDeviceManagerDefaultConsistency` | At most one device is marked as default |
 | `testRefreshDevicesPopulatesUIDs` | All enumerated devices have non-empty UID and name |
-| `testStartRecordingWithNilDeviceUsesDefault` | Passing nil for device UID does not crash |
+| `testRefreshDevicesIsIdempotent` | Consecutive `refreshDevices()` calls return the same result |
 | `testStartRecordingWithInvalidDeviceThrows` | Invalid device UID throws `AudioCaptureError.deviceNotFound` |
 
 ## Coverage Areas
